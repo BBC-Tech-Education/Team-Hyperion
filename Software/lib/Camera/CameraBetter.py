@@ -5,14 +5,15 @@ from pyb import UART
 
 widSize = 480
 robot = False
-draw = True
+draw = False
 
-CENTER_X = widSize // 2 + 3
-CENTER_Y = widSize // 2 - 15
-MAX_RADIUS = 200
-MIN_RADIUS = 45
-INNER_CX = CENTER_X
-INNER_CY = CENTER_Y - 50
+CENTER_X = widSize // 2 + 15 # +3 || +15
+CENTER_Y = widSize // 2 - 70 # -50 || -70
+
+MAX_RADIUS = 170 #205 || 170
+MIN_RADIUS = 47 # 50 || 47
+INNER_CX = CENTER_X - 3 # || -3
+INNER_CY = CENTER_Y - 0 # -5 || 0
 MIN_RADIUS_SQ = MIN_RADIUS * MIN_RADIUS
 MAX_RADIUS_SQ = MAX_RADIUS * MAX_RADIUS
 ORIGIN = widSize // 2
@@ -29,13 +30,13 @@ sensor.set_auto_exposure(False, exposure_us=30000)
 uart = UART(3, 115200, timeout_char=100)
 
 if robot:
-    goal_thresholds = [(0, 38, -128, 11, -128, -16), (0, 100, -128, 127, 12, 127)]
+    goal_thresholds = [(0, 50, -128, 127, -128, -12), (0, 100, -128, 127, 22, 127)]
     ball_threshold = [(38, 100, 29, 127, 25, 127)]
 else:
     # goal_thresholds = [(30, 100, -128, 35, -128, -18), (0, 100, -128, 127, 12, 127)]
     # ball_threshold = [(0, 100, 30, 127, 36, 127)]
     goal_thresholds = [(), ()]
-    ball_threshold = [(0, 100, 25, 127, 0, 127)]
+    ball_threshold = [(0, 82, -128, 127, 40, 127)]
 
 ROI_SIZE = 75
 MAX_LOST_FRAMES = 10
