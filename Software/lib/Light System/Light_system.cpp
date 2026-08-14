@@ -1,18 +1,8 @@
-/**
- * @file Light_system.cpp
- * @brief Line sensing: mux read, thresholding, cluster geometry, size model.
- */
-
 #include <Arduino.h>
 #include "Light_system.h"
 #include "Common.h"
 
-/**
- * @brief Address all 16 mux slots; read three mux ADC outputs per slot.
- *
- * 10 µs settle after select change before analogRead. Results are written
- * through muxIndex[] so sensorReadings[i] is in angular order.
- */
+
 void LightSystem::read() {
     for (uint8_t i = 0; i < 16; i++) {
         for (uint8_t j = 0; j < 4; j++) {
@@ -42,10 +32,7 @@ void LightSystem::read() {
     #endif
 }
 
-/**
- * @brief Capture ambient/green baseline at boot and set thresholds = reading + LS_THRESH.
- * Call once while the robot is on field green (not on white).
- */
+
 void LightSystem::init() {
     pinMode(LS_OUT_1, INPUT);
     pinMode(LS_OUT_2, INPUT);
@@ -62,23 +49,8 @@ void LightSystem::init() {
     }
 }
 
-/**
- * @brief Full line-estimation pipeline for one control tick.
- *
- * Algorithm overview:
- *   1. Read ADCs and threshold → onWhite[]
- *   2. Fill single-sensor holes on the inner ring (neighbours both white)
- *   3. Cluster contiguous white sensors on the inner ring (wrap-aware)
- *   4. If clusters exist:
- *        1 cluster → lineDir = midpoint; size from cluster angular width
- *        2 clusters → lineDir between midpoints (short arc); size from half-angle
- *        3 clusters → use the pair spanning the largest gap as the line
- *   5. Else fall back to outer corner groups (cardinal midpoints)
- *   6. Remap lineDir into robot forward frame: (450 - lineDir) mod 360
- *
- * Size model uses 1 - cos(halfAngle) so small contacts → small size, wrapping
- * around more of the robot → size approaching 1.
- */
+
+
 void LightSystem::update() {
 
     read();
@@ -102,7 +74,6 @@ void LightSystem::update() {
     Serial.println();
     #endif
 
-    /* Morphological close: fill one-sensor gaps on the ring. */
     for (uint8_t i = 0; i < LS_INNER_NUM; i++) {
         if (!onWhite[i]) {
             onWhite[i] = (onWhite[mod(i - 1, LS_INNER_NUM)] && onWhite[mod(i + 1, LS_INNER_NUM)]);
@@ -129,7 +100,6 @@ void LightSystem::update() {
     lineDir = -1.0f;
     lineSize = -1.0f;
 
-    /* Linear scan for rising/falling edges on the inner ring. */
     for (uint8_t i = 0; i < LS_INNER_NUM; i++) {
         if (!inCluster) {
             if (onWhite[i]) {
@@ -145,7 +115,6 @@ void LightSystem::update() {
         }
     }
 
-    /* Handle wrap-around cluster spanning index N-1 → 0. */
     if (onWhite[LS_INNER_NUM - 1]) {
         if (onWhite[0]) {
             clusterArray[0].start = clusterArray[clusterNum].start;
@@ -156,80 +125,61 @@ void LightSystem::update() {
     }
 
     if (clusterNum > 0) {
-        /* 11.25° per inner sensor (360 / 32). */
         for (uint8_t i = 0; i < 3; i++) {
-            clusterArray[i].midpoint =
-                mid_angle_between(clusterArray[i].start * 11.25f, clusterArray[i].end * 11.25f);
+            clusterArray[i].midpoint = mid_angle_between(clusterArray[i].start * 11.25f, clusterArray[i].end * 11.25f);
         }
 
         #if DEBUG_LS_CLUSTER
         Serial.printf("Number of Clusters: %d\t", clusterNum);
         for (uint8_t i = 0; i < clusterNum; i++) {
-            Serial.printf("C%d: s=%d e=%d m=%.2f\t",
-                          i + 1, clusterArray[i].start, clusterArray[i].end, clusterArray[i].midpoint);
+            Serial.printf("C%d: s=%d e=%d m=%.2f\t", i + 1, clusterArray[i].start, clusterArray[i].end, clusterArray[i].midpoint);
         }
         Serial.println();
         #endif
 
         if (clusterNum == 3) {
-            /* Line is opposite the largest angular gap between cluster midpoints. */
             float angleDiff12 = angle_between(clusterArray[0].midpoint, clusterArray[1].midpoint);
             float angleDiff23 = angle_between(clusterArray[1].midpoint, clusterArray[2].midpoint);
             float angleDiff31 = angle_between(clusterArray[2].midpoint, clusterArray[0].midpoint);
             float biggestAngle = fmaxf(angleDiff12, fmaxf(angleDiff23, angleDiff31));
 
-            if (biggestAngle == angleDiff12) {
+            if(biggestAngle == angleDiff12) {
                 lineDir = mid_angle_between(clusterArray[1].midpoint, clusterArray[0].midpoint);
-                lineSize = angle_between(clusterArray[1].midpoint, clusterArray[0].midpoint) <= 180.0f
-                    ? 1.0f - cosf(DEG_TO_RAD * angle_between(clusterArray[1].midpoint, clusterArray[0].midpoint) / 2.0f)
-                    : 1.0f;
-            } else if (biggestAngle == angleDiff23) {
+                lineSize = angle_between(clusterArray[1].midpoint, clusterArray[0].midpoint) <= 180.0f ? 1.0f - cosf(DEG_TO_RAD * angle_between(clusterArray[1].midpoint, clusterArray[0].midpoint) / 2.0f) : 1.0f;
+            } else if(biggestAngle == angleDiff23) {
                 lineDir = mid_angle_between(clusterArray[2].midpoint, clusterArray[1].midpoint);
-                lineSize = angle_between(clusterArray[2].midpoint, clusterArray[1].midpoint) <= 180.0f
-                    ? 1.0f - cosf(DEG_TO_RAD * angle_between(clusterArray[2].midpoint, clusterArray[1].midpoint) / 2.0f)
-                    : 1.0f;
+                lineSize = angle_between(clusterArray[2].midpoint, clusterArray[1].midpoint) <= 180.0f ? 1.0f - cosf(DEG_TO_RAD * angle_between(clusterArray[2].midpoint, clusterArray[1].midpoint) / 2.0f) : 1.0f;
             } else {
                 lineDir = mid_angle_between(clusterArray[0].midpoint, clusterArray[2].midpoint);
-                lineSize = angle_between(clusterArray[0].midpoint, clusterArray[2].midpoint) <= 180.0f
-                    ? 1.0f - cosf(DEG_TO_RAD * angle_between(clusterArray[0].midpoint, clusterArray[2].midpoint) / 2.0f)
-                    : 1.0f;
+                lineSize = angle_between(clusterArray[0].midpoint, clusterArray[2].midpoint) <= 180.0f ? 1.0f - cosf(DEG_TO_RAD * angle_between(clusterArray[0].midpoint, clusterArray[2].midpoint) / 2.0f) : 1.0f;
             }
         } else if (clusterNum == 2) {
             bool clockwise = angle_between(clusterArray[0].midpoint, clusterArray[1].midpoint) <= 180.0f;
-            lineDir = clockwise
-                ? mid_angle_between(clusterArray[0].midpoint, clusterArray[1].midpoint)
-                : mid_angle_between(clusterArray[1].midpoint, clusterArray[0].midpoint);
-            lineSize = 1.0f - cosf(DEG_TO_RAD * (clockwise
-                ? angle_between(clusterArray[0].midpoint, clusterArray[1].midpoint) / 2.0f
-                : angle_between(clusterArray[1].midpoint, clusterArray[0].midpoint) / 2.0f));
+            lineDir = clockwise ? mid_angle_between(clusterArray[0].midpoint, clusterArray[1].midpoint) : mid_angle_between(clusterArray[1].midpoint, clusterArray[0].midpoint);
+            lineSize = 1.0f - cosf(DEG_TO_RAD * (clockwise ? angle_between(clusterArray[0].midpoint, clusterArray[1].midpoint) / 2.0f : angle_between(clusterArray[1].midpoint, clusterArray[0].midpoint) / 2.0f));
         } else {
             lineDir = clusterArray[0].midpoint;
-            lineSize = 1.0f - cosf(DEG_TO_RAD *
-                angle_between(clusterArray[0].start * 11.25f, clusterArray[0].end * 11.25f) / 2.0f);
+            lineSize = 1.0f - cosf(DEG_TO_RAD * angle_between(clusterArray[0].start * 11.25f, clusterArray[0].end * 11.25f) / 2.0f);
         }
     } else {
-        /*
-         * Inner ring quiet — use outer corner sensor groups as coarse cardinals.
-         * Indices 32–47 map to N/E/S/W-ish physical corners on the chassis.
-         */
         if (onWhite[32] || onWhite[33] || onWhite[34] || onWhite[35]) {
             clusterArray[0].midpoint = 0.0f;
-            clusterNum++;
+            clusterNum ++;
         }
 
         if (onWhite[36] || onWhite[37] || onWhite[38] || onWhite[39]) {
             clusterArray[1].midpoint = 90.0f;
-            clusterNum++;
+            clusterNum ++;
         }
 
         if (onWhite[40] || onWhite[41] || onWhite[42] || onWhite[43]) {
             clusterArray[2].midpoint = 180.0f;
-            clusterNum++;
+            clusterNum ++;
         }
 
         if (onWhite[44] || onWhite[45] || onWhite[46] || onWhite[47]) {
             clusterArray[3].midpoint = 270.0f;
-            clusterNum++;
+            clusterNum ++;
         }
 
         if (clusterNum == 2) {
@@ -260,7 +210,6 @@ void LightSystem::update() {
         }
     }
 
-    /* Sensor-ring frame → robot forward frame. */
     if (lineDir != -1.0f) {
         lineDir = float_mod(450.0f - lineDir, 360.0f);
     }

@@ -1,17 +1,6 @@
-/**
- * @file Drive_system.cpp
- * @brief Implementation of omni drive mixing and H-bridge output.
- */
-
 #include "Drive_system.h"
 #include <math.h>
 
-/**
- * @brief Initialise GPIO and PWM.
- *
- * Both INA/INB are driven HIGH briefly as a known idle state before PWM
- * frequency is programmed (Teensy analogWriteFrequency).
- */
 void DriveSystem::init()
 {
     for (uint8_t i = 0; i < MOTOR_NUM; i++)
@@ -27,20 +16,6 @@ void DriveSystem::init()
     }
 }
 
-/**
- * @brief Mix translation + rotation, saturate, and write H-bridges.
- *
- * Mixer:
- *   values[i] = cos(ang + motorAng[i]) * spd + cor
- *
- * If max |values[i]| > 255, all channels are scaled by 255/max so relative
- * ratios (and thus direction) are preserved under PWM clipping.
- *
- * Direction truth table (typical dual-input driver):
- *   value > 0 → INA=1, INB=0 (forward)
- *   value < 0 → INA=0, INB=1 (reverse)
- *   value = 0 → both low after fabs round (coast/brake depends on driver)
- */
 void DriveSystem::run(float spd, float ang, float cor)
 {
     #if DEBUG_DRIVE_CMD

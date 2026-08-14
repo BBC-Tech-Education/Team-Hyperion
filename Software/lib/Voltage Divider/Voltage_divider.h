@@ -1,32 +1,23 @@
-/**
- * @file Voltage_divider.h
- * @brief Battery pack voltage measurement via resistive divider + ADC.
- *
- * Converts analogRead() into volts using:
- *   V = (ADC / divider) + offset
- * where @c divider absorbs the divider ratio and ADC full-scale scaling, and
- * @c offset corrects systematic bias.
- *
+/*!
+ * @file VoltDiv.h
+ * 
+ * @mainpage This is a library used to read the battery level of the robot.
+ * 
  * @author S.Garg (Brisbane Boys' College)
  */
-
 #ifndef VOLTDIV_H
 #define VOLTDIV_H
 
-class VoltageDivider {
+/*!
+ * @brief Class that stores state and functions for interacting with the
+ *        robot's electrical circuit using voltage dividers to uncover battery
+ *        level.
+ */
+class VoltageDivider { 
 public:
-    /**
-     * @param p ADC GPIO pin.
-     * @param d Scale factor (ADC counts → volts denominator).
-     * @param o Additive offset (volts).
-     */
     VoltageDivider(uint8_t p, float d, float o) : pin(p), divider(d), offset(o) {}
-
     void init();
-
-    /** @return Estimated pack voltage (V). */
     float get_lvl();
-
 private:
     uint8_t pin;
     float divider;

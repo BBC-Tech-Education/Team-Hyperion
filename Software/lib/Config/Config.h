@@ -2,14 +2,15 @@
 #define CONFIG_H
 
 /////////////////////////////////// ROBOT ID ///////////////////////////////////
-#define CONTROL 1 // control = 1, chaos = 0
+#define CONTROL 0 // control = 1, chaos = 0
 #define OPEN 1
 #define GOAL_TRACKING 0
-#define LIGHT_SENSORS 0 
-#define ORBIT 0
+// #define LIGHT_SENSORS 0
+#define ORBIT 1 // enables or disables Orbit
+#define SURGE 0 // enables or disables Surging
 #define CAM_BLUE_GOAL 0
 #define USE_COM_MODULE 0 // 1 = COM_MODULE pin, 0 = ENABLE_SWITCH
-
+#define PID_AUTO_TUNE 0 // 1 = IMU heading PD relay tune (STATE_TUNE), 0 = normal game
 
 //////////////////////////////////// DEBUG ////////////////////////////////////
 
@@ -60,18 +61,23 @@
 
 #if CONTROL
 //CONTROL
-    #define BASE_SPEED 100.0f
-    #define SURGE_SPEED 130.0f
-    #define BALL_STR_CLOSE_THRESH 40.0f
-    #define BALL_CLOSE_STR 60.0f // higher = wider, lower = closer
-    #define BALL_FRONT_MIN 40.0f //35.0f
-    #define BALL_FRONT_MAX 335.0f //345.0f
+    #define BASE_SPEED 80.0f //110.0f
+    #define SURGE_SPEED 120.0f //130.0f
+    #define BALL_STR_CLOSE_THRESH 20.0f //20.0f
+    #define BALL_CLOSE_STR 45.28f // higher = wider, lower = closer
+    #define BALL_FRONT_MIN 25.0f //35.0f
+    #define BALL_FRONT_MAX 350.0f //345.0f
+    #define ORBIT_TARGET_OFFSET 45.0f
+    #define ORBIT_DIR_MULTI 0.4f
+    #define ORBIT_DIR_EXP 0.15f //0.25f
+    #define ORBIT_DIST_MULTI 8.47979f // 0.0125f
+    #define ORBIT_DIST_EXP -11.64561f //4.5f
 
     #define DEFEND_CAM_TARGET 300.0
     #define DEFEND_MAX_DIST 465.07
     #define LS_THRESH 275
     #define KP_IMU 1.25
-    #define KD_IMU 0.035 // 0.04
+    #define KD_IMU 0.04 // 0.04
     #define KP_GOALT 0.6
     #define KD_GOALT 0.0
     #define KP_VERT 160.0
@@ -83,33 +89,40 @@
     #define KD_LAV 0.0
     #define COM_MODULE_THRESH 900
     #define LS_SLIDE_CONST 255.0f
-    #define CAMERA_MAX 2000.0f
     #define CAM_CENTER_X 244
     #define CAM_CENTER_Y 244
 #else
 // CHAOS
-    #define BASE_SPEED 60.0f 
-    #define SURGE_SPEED 150.0f 
-    #define DEFEND_CAM_TARGET 0
-    #define DEFEND_MAX_DIST 0.0
-    #define LS_THRESH 100 
-    #define KP_IMU 3.0 
-    #define KD_IMU 0.15 
-    #define KP_GOALT 1.5
-    #define KD_GOALT 0.9
-    #define KP_VERT 120.0
-    #define KP_HOZT 1.0
-    #define KP_CVERT 0.0
-    #define KP_LOC 0.0
+    #define BASE_SPEED 60.0f //110.0f
+    #define SURGE_SPEED 100.0f //130.0f
+    #define BALL_STR_CLOSE_THRESH 20.0f //20.0f
+    #define BALL_CLOSE_STR 25.0f // lower = narrower, higher = wider
+    #define BALL_FRONT_MIN 35.0f //35.0f
+    #define BALL_FRONT_MAX 359.99f //345.0f
+    #define ORBIT_TARGET_OFFSET 45.0f
+    #define ORBIT_DIR_MULTI 1.20636f //0.4f
+    #define ORBIT_DIR_EXP 0.0660224f //0.25f
+    #define ORBIT_DIST_MULTI 12.41625f
+    #define ORBIT_DIST_EXP -14.56002f
+
+    #define DEFEND_CAM_TARGET 300.0
+    #define DEFEND_MAX_DIST 465.07
+    #define LS_THRESH 275
+    #define KP_IMU 1.25
+    #define KD_IMU 0.04 // 0.04
+    #define KP_GOALT 0.6
+    #define KD_GOALT 0.0
+    #define KP_VERT 160.0
+    #define KP_HOZT 1.2
+    #define KP_CVERT 0.6
+    #define KP_LOC 0.15
     #define KD_LOC 0.0
-    #define KP_LAV 100.0//200.0
+    #define KP_LAV 100.0
     #define KD_LAV 0.0
-    #define BALL_CLOSE_STR 95.0f 
-    #define COM_MODULE_THRESH 50
-    #define LS_SLIDE_CONST 100.0f//255.0f
-    #define CAM_CENTER_X 243
-    #define CAM_CENTER_Y 225
-    #define BALL_STR_CLOSE_THRESH 43.27f
+    #define COM_MODULE_THRESH 900
+    #define LS_SLIDE_CONST 255.0f
+    #define CAM_CENTER_X 244
+    #define CAM_CENTER_Y 244
 #endif
 
 // --- MAGIC NUMBERS & BEHAVIOR CONSTANTS ---
@@ -118,6 +131,17 @@
 
 #define BNO055_SENSOR_ID 55
 #define IMU_PID_MAX 100.0f
+
+// --- PID AUTO TUNE (heading correction) ---
+#define TUNE_RELAY_COR 50.0f
+#define TUNE_HYSTERESIS_DEG 4.0f
+#define TUNE_MIN_CYCLES 3
+#define TUNE_TIMEOUT_MS 30000UL
+#define TUNE_KP_MAX 1.5f
+#define TUNE_KD_FRAC 0.2f
+#define TUNE_PRINT_INTERVAL_MS 500UL
+#define TUNE_MIN_AMPLITUDE_DEG 2.0f
+
 #define GOALT_PID_MAX 100.0f
 #define LAV_PID_MAX 150.0f
 #define LOC_PID_MAX 200.0f
@@ -130,12 +154,6 @@
 #define LINE_INSIDE_THRESH 1.0f
 #define LINE_TOUCH_REENTRY_ANGLE 60.0f
 #define LINE_AVOID_THRESH 0.2f
-
-#define ORBIT_TARGET_OFFSET 45.0f
-#define ORBIT_DIR_MULTI 0.4f
-#define ORBIT_DIR_EXP 0.15f //0.25f
-#define ORBIT_DIST_MULTI 0.0125f // 0.0125f
-#define ORBIT_DIST_EXP 3.8f //4.5f
 
 ///////////////////////////////////// TSSP /////////////////////////////////////
 
@@ -174,7 +192,7 @@
 
 ////////////////////////////////// BLUETOOTH ///////////////////////////////////
 
-// Serial2 on Primary â€” Serial1 is inter-Teensy ball link, Serial5 is camera.
+// Serial2 on Primary Ã¢â‚¬â€ Serial1 is inter-Teensy ball link, Serial5 is camera.
 #define BT_SERIAL Serial2
 #define BT_BAUD 115200
 #define BT_PACKET_SIZE 6

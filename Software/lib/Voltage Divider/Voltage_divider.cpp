@@ -1,8 +1,3 @@
-/**
- * @file Voltage_divider.cpp
- * @brief ADC sample → battery voltage conversion.
- */
-
 #include <Arduino.h>
 #include "Voltage_divider.h"
 

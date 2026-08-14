@@ -16,7 +16,7 @@ csi0.reset()
 csi0.pixformat(csi.RGB565)
 csi0.framesize(csi.QVGA)
 csi0.window((widSize,widSize))
-#csi0.windowing((widSize, widSize))
+w#csi0.windowing((widSize, widSize))
 
 csi0.snapshot(time=2000)
 

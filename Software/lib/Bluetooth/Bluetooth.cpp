@@ -1,8 +1,3 @@
-/**
- * @file Bluetooth.cpp
- * @brief Bluetooth UART framing and attacker/defender arbitration.
- */
-
 #include <Arduino.h>
 #include "Bluetooth.h"
 
@@ -23,17 +18,6 @@ void Bluetooth::update(uint8_t score, uint8_t ballStr, bool enabled, uint8_t bat
     send();
 }
 
-/**
- * @brief Decide local role from peer state and telemetry.
- *
- * Priority (highest first):
- *   1. Neither robot sees the ball → leave roles unchanged (clear switching).
- *   2. Local disabled → claim attacker (so the live robot can defend/attack alone).
- *   3. Peer offline/disabled → local becomes defender (role=false).
- *   4. switching latch → flip once to break dual-attacker deadlock.
- *   5. Both below voltage threshold → higher battery becomes attacker.
- *   6. Default → higher/equal score becomes attacker.
- */
 void Bluetooth::resolve_role() {
     if (self.ballStr == 0 && other.ballStr == 0) {
         switching = false;
@@ -52,8 +36,7 @@ void Bluetooth::resolve_role() {
         switching = false;
         return;
     }
-    if (self.batLvl < ROBOT_REQUIRED_VOLT && other.batLvl < ROBOT_REQUIRED_VOLT &&
-        self.batLvl != other.batLvl) {
+    if (self.batLvl < ROBOT_REQUIRED_VOLT && other.batLvl < ROBOT_REQUIRED_VOLT && self.batLvl != other.batLvl) {
         self.role = (self.batLvl > other.batLvl);
         return;
     }
@@ -66,12 +49,6 @@ void Bluetooth::resolve_role() {
 #endif
 }
 
-/**
- * @brief Consume packets starting with dual BT_START_BYTE sync.
- *
- * Detects role collisions: if peer role changed and now equals ours, set
- * @c switching so the next resolve_role() forces a flip.
- */
 void Bluetooth::read() {
     while (BT_SERIAL.available() >= BT_PACKET_SIZE) {
         if (BT_SERIAL.read() != BT_START_BYTE) {

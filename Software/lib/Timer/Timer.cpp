@@ -1,22 +1,28 @@
-/**
+/*! 
  * @file Timer.cpp
- * @brief Soft timer implementation using Arduino micros().
- *
- * @note micros() overflows ~70 minutes; subtraction still works for intervals
- * shorter than that window due to unsigned wrap semantics.
  */
-
 #include <Arduino.h>
 #include "Timer.h"
 
+/*! 
+ * @brief Initialize the timer based on the users constraints.
+ * 
+ * @param duration Duration of the time set per instance (in microseconds).
+ */
 Timer::Timer(unsigned long duration) {
     timerDuration = duration;
 }
 
+/*! 
+ * @brief Function to reset the timer based on the current micros.
+ */
 void Timer::update() {
     lastUpdate = micros();
 }
 
+/*! 
+ * @brief Check if the set time has passed since the last reset time.
+ */
 bool Timer::time_has_passed() {
     if (micros() - lastUpdate > timerDuration) {
         update();
@@ -26,6 +32,10 @@ bool Timer::time_has_passed() {
     return false;
 }
 
+/*!
+ * @brief Check if the set time has passed since the last reset time, but do not
+ *        reset the timer.
+ */
 bool Timer::time_has_passed_no_update() {
     return micros() - lastUpdate > timerDuration;
 }
