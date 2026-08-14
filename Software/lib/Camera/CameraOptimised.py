@@ -1,4 +1,4 @@
-# This file has slightly different logic compared to CameraOptimised.py- where the pre-defined center of the image is used, rather than that of the actual center of the image.
+# This file is the optimised, same logic version of Camera.py
 import sensor
 import time
 from pyb import UART
@@ -13,9 +13,9 @@ MAX_RADIUS = 200
 MIN_RADIUS = 45
 INNER_CX = CENTER_X
 INNER_CY = CENTER_Y - 50
+OUTER_CY = CENTER_Y - 30
 MIN_RADIUS_SQ = MIN_RADIUS * MIN_RADIUS
 MAX_RADIUS_SQ = MAX_RADIUS * MAX_RADIUS
-ORIGIN = widSize // 2
 
 sensor.reset()
 sensor.set_pixformat(sensor.RGB565)
@@ -42,7 +42,7 @@ MAX_LOST_FRAMES = 10
 lost_ball_count = MAX_LOST_FRAMES
 last_ball_x = CENTER_X
 last_ball_y = CENTER_Y
-data = [[ORIGIN, ORIGIN], [ORIGIN, ORIGIN], [ORIGIN, ORIGIN]]
+data = [[CENTER_X, CENTER_Y], [CENTER_X, CENTER_Y], [CENTER_X, CENTER_Y]]
 frame = 0
 
 clock = time.clock()
@@ -54,12 +54,8 @@ def in_valid_zone(blob):
     if dx * dx + dy * dy <= MIN_RADIUS_SQ:
         return False
     dx = blob.cx() - CENTER_X
-    dy = blob.cy() - CENTER_Y
+    dy = blob.cy() - OUTER_CY
     return dx * dx + dy * dy < MAX_RADIUS_SQ
-
-
-def to_mirror(cx, cy):
-    return ORIGIN + CENTER_X - cx, ORIGIN + CENTER_Y - cy
 
 
 while True:
@@ -69,8 +65,8 @@ while True:
     data[2][0] = data[2][1] = 488
 
     if frame % 4 == 0:
-        data[0][0], data[0][1] = ORIGIN, ORIGIN
-        data[1][0], data[1][1] = ORIGIN, ORIGIN
+        data[0][0], data[0][1] = CENTER_X, CENTER_Y
+        data[1][0], data[1][1] = CENTER_X, CENTER_Y
 
         yellow = blue = None
         for blob in img.find_blobs(goal_thresholds, x_stride=4, y_stride=4,
@@ -84,18 +80,20 @@ while True:
                 blue = blob
 
         if yellow:
-            data[0][0], data[0][1] = to_mirror(yellow.cx(), yellow.cy())
+            data[0][0] = widSize - yellow.cx()
+            data[0][1] = widSize - yellow.cy()
             if draw:
                 img.draw_rectangle(yellow.rect(), color=(0, 0, 255))
         if blue:
-            data[1][0], data[1][1] = to_mirror(blue.cx(), blue.cy())
+            data[1][0] = widSize - blue.cx()
+            data[1][1] = widSize - blue.cy()
             if draw:
                 img.draw_rectangle(blue.rect(), color=(255, 255, 0))
     elif draw:
-        if data[0] != [ORIGIN, ORIGIN]:
-            img.draw_cross(ORIGIN + CENTER_X - data[0][0], ORIGIN + CENTER_Y - data[0][1], color=(0, 0, 255))
-        if data[1] != [ORIGIN, ORIGIN]:
-            img.draw_cross(ORIGIN + CENTER_X - data[1][0], ORIGIN + CENTER_Y - data[1][1], color=(255, 255, 0))
+        if data[0][0] != CENTER_X:
+            img.draw_cross(widSize - data[0][0], widSize - data[0][1], color=(0, 0, 255))
+        if data[1][0] != CENTER_X:
+            img.draw_cross(widSize - data[1][0], widSize - data[1][1], color=(255, 255, 0))
 
     roi = (0, 0, widSize, widSize)
     if lost_ball_count < MAX_LOST_FRAMES:
@@ -112,18 +110,18 @@ while True:
             blob = b
 
     if blob:
-        data[2][0], data[2][1] = to_mirror(blob.cx(), blob.cy())
+        data[2][0] = widSize - blob.cx()
+        data[2][1] = widSize - blob.cy()
         last_ball_x = blob.cx()
         last_ball_y = blob.cy()
         lost_ball_count = 0
         if draw:
             img.draw_rectangle(blob.rect(), color=(255, 165, 0))
-            img.draw_line(CENTER_X, CENTER_Y, blob.cx(), blob.cy(), color=(255, 165, 0), thickness=2)
     else:
         lost_ball_count += 1
 
     if draw:
-        img.draw_circle(CENTER_X, CENTER_Y, MAX_RADIUS, color=(255, 255, 255), thickness=2)
+        img.draw_circle(CENTER_X, OUTER_CY, MAX_RADIUS, color=(255, 255, 255), thickness=2)
         img.draw_circle(INNER_CX, INNER_CY, MIN_RADIUS, color=(255, 0, 0), thickness=2)
 
     uart.writechar(255)

@@ -48,8 +48,10 @@ if robot:
     goal_thresholds = [(0, 38, -128, 11, -128, -16), (0, 100, -128, 127, 12, 127)]
     ball_threshold = [(38, 100, 29, 127, 25, 127)]
 else:
-    goal_thresholds = [(30, 100, -128, 35, -128, -18), (0, 100, -128, 127, 12, 127)]
-    ball_threshold = [(0, 100, 30, 127, 36, 127)]
+    # goal_thresholds = [(30, 100, -128, 35, -128, -18), (0, 100, -128, 127, 12, 127)]
+    # ball_threshold = [(0, 100, 30, 127, 36, 127)]
+    goal_thresholds = [(), ()]
+    ball_threshold = [(0, 100, 25, 127, 0, 127)]
 
 
 # Data array persists across frames now.
