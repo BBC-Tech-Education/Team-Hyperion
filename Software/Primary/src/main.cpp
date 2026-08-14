@@ -158,18 +158,24 @@ void calculate_attack() {
         
     #if ORBIT
         float dir = normaliseAngle180(float_mod(absBallDir - orbitTarget, 360.0f));
-        float ballAngDiff = (dir > 0.0f ? 1.0f : -1.0f) * fmin(90.0f, 0.00000178977f*pow(dir, 4) + 0.0000600638f*pow(dir, 3) + 0.00949115f*dir*dir - 0.00316413f*dir);
+        // float ballAngDiff = (dir > 0.0f ? 1.0f : -1.0f) * fmin(90.0f, 0.000000722353f*pow(dir, 4) + 0.0000902932f*pow(dir, 3) + 0.0120756f*dir*dir + -0.0403872f*dir);
+        float ballAngDiff = constrain(0.0000447206f*pow(dir, 3) + 0.583361f*dir, -90.0f, 90.0f);
         float distMulti = constrain(((BALL_CLOSE_STR * ORBIT_DIST_MULTI)/relBallStr)*expf((ORBIT_DIST_EXP*ORBIT_DIST_MULTI)/relBallStr), 0.0f, 1.0f);
         float angleAddition = distMulti * ballAngDiff;
         #if SURGE
         surgeTimer--;
         if(((absBallDir < BALL_FRONT_MIN || absBallDir > BALL_FRONT_MAX) && (relBallStr < BALL_STR_CLOSE_THRESH))) {
-            moveDir = absBallDir;
+            // moveDir = absBallDir;
+            moveDir = 0.0f;
             surgeTimer = 100;
             moveSpd = SURGE_SPEED + 70.0f;
-        } else if(surgeTimer > 0){
-            moveDir = 0;
+            Serial.print("SURGE");
+            Serial.print("\t");
+        } else if(surgeTimer > 0) {
+            moveDir = 0.0f;
             moveSpd = SURGE_SPEED + 70.0f;
+            Serial.print("SURGE");
+            Serial.print("\t");
         } else {
             moveDir = float_mod(absBallDir + angleAddition, 360.0f);
         }
@@ -215,11 +221,13 @@ void calculate_attack() {
     #endif
 
     motors.run(moveSpd, float_mod(moveDir - bearing, 360.0f), moveCor);
-    // Serial.print(relBallDir);
-    // Serial.print("\t");
-    // Serial.print(relBallStr);
-    // Serial.print("\t");
-    // Serial.print(moveDir);
+    Serial.print(relBallDir);
+    Serial.print("\t");
+    Serial.print(relBallStr);
+    Serial.print("\t");
+    Serial.print(moveDir);
+    Serial.print("\t");
+    Serial.println(moveSpd);
     // Serial.print("\t");
     // Serial.println(surgeTimer);
 }
@@ -228,31 +236,33 @@ void calculate_attack() {
 void calculate_defend() {
     float hoztInput = (relBallStr != 0.0f) ? -normaliseAngle180(relBallDir) : normaliseAngle180(bearing);
     float hozt = horizontal.update(hoztInput, 0.0f);
-
+ 
     float vert = 0.0f;
-    if (absLineSize != -1.0f) {
-        vert = -vertical.update(absLineSize, 1.0f);
-    } else if (defendGoal.exists()) {
+    if (defendGoal.exists()) {
         vert = vertCam.update(defendGoal.mag, DEFEND_CAM_TARGET);
     }
-
+    // Serial.println(defendGoal.mag);
     float moveSpd = sqrtf(hozt*hozt + vert*vert);
     float moveDir = (atan2f(hozt, vert) * RAD_TO_DEG);
     float moveCor = 0.0f;
-
+ 
     if(defendGoal.exists()) {
         float goalAngle = float_mod(defendGoal.arg + 180.0f, 360.0f);
         moveCor = goalTrack.update(normaliseAngle180(goalAngle), 0.0f);
     } else {
         moveCor = -correction.update(normaliseAngle180(bearing), 0.0);
     }
-
+ 
     #if DEBUG_MAIN_DEFEND
     Serial.printf("Move Dir: %.2f\tMove Spd: %.2f\tMove Cor: %.2f\n", moveDir, moveSpd, moveCor);
     Serial.printf("Hozt: %.2f\tVert: %.2f\n", hozt, vert);
     #endif
-
-    motors.run(moveSpd, float_mod(moveDir - bearing, 360.0f), moveCor);
+    if(relBallDir > 90 && relBallDir < 270) {
+        calculate_attack();
+    } else {
+        motors.run(moveSpd, float_mod(moveDir - bearing, 360.0f), moveCor);
+    }
+   
 }
 
 /// @brief  Updates our battery LED to show if our battery is low during a game.
@@ -338,7 +348,7 @@ void loop() {
             ls.update();
             update_absolute_line();
 
-            bool attack = true;
+            bool attack = !CONTROL;
 
             if (motorsOn) {
                 if (attack) {

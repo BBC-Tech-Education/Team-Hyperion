@@ -7,12 +7,13 @@
 void Camera::init() {
     CAM_SERIAL.begin(115200);
     pinMode(GOAL_TRACK_SWITCH, INPUT);
+    ballNotVis.update();
 }
 
 void Camera::read() {
     int16_t b1 = CAM_SERIAL.read() - CAM_PIXEL_SHIFT;
     int16_t b2 = CAM_SERIAL.read() - CAM_PIXEL_SHIFT;
-    if(b1 != (CAM_CENTER_X-CAM_PIXEL_SHIFT) && b2 != (CAM_CENTER_Y-CAM_PIXEL_SHIFT)) {
+    if (b1 != (CAM_CENTER_X - CAM_PIXEL_SHIFT) && b2 != (CAM_CENTER_Y - CAM_PIXEL_SHIFT)) {
         yellow.setStandard(b1, b2);
         to_bearing(yellow);
     } else {
@@ -21,7 +22,7 @@ void Camera::read() {
 
     b1 = CAM_SERIAL.read() - CAM_PIXEL_SHIFT;
     b2 = CAM_SERIAL.read() - CAM_PIXEL_SHIFT;
-    if(b1 != (CAM_CENTER_X-CAM_PIXEL_SHIFT) && b2 != (CAM_CENTER_Y-CAM_PIXEL_SHIFT)) {
+    if (b1 != (CAM_CENTER_X - CAM_PIXEL_SHIFT) && b2 != (CAM_CENTER_Y - CAM_PIXEL_SHIFT)) {
         blue.setStandard(b1, b2);
         to_bearing(blue);
     } else {
@@ -30,11 +31,11 @@ void Camera::read() {
 
     b1 = CAM_SERIAL.read() - CAM_PIXEL_SHIFT;
     b2 = CAM_SERIAL.read() - CAM_PIXEL_SHIFT;
-    if(b1 != (CAM_CENTER_X-CAM_PIXEL_SHIFT) && b2 != (CAM_CENTER_Y-CAM_PIXEL_SHIFT)) {
+    if (b1 != (CAM_CENTER_X - CAM_PIXEL_SHIFT) && b2 != (CAM_CENTER_Y - CAM_PIXEL_SHIFT)) {
         ball.setStandard(b1, b2);
         to_bearing(ball);
-    } else {
-        ball.setStandard(0, 0);
+        
+        ballNotVis.update();
     }
 
     #if DEBUG_CAM_RAW
@@ -59,6 +60,9 @@ void Camera::update() {
                 defend = blue;
             }
         }
+    }
+    if (ballNotVis.time_has_passed_no_update()) {
+        ball.setStandard(0, 0);
     }
 }
 

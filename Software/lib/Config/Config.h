@@ -7,7 +7,7 @@
 #define GOAL_TRACKING 0
 // #define LIGHT_SENSORS 0
 #define ORBIT 1 // enables or disables Orbit
-#define SURGE 0 // enables or disables Surging
+#define SURGE 1 // enables or disables Surging
 #define CAM_BLUE_GOAL 0
 #define USE_COM_MODULE 0 // 1 = COM_MODULE pin, 0 = ENABLE_SWITCH
 #define PID_AUTO_TUNE 0 // 1 = IMU heading PD relay tune (STATE_TUNE), 0 = normal game
@@ -64,23 +64,23 @@
     #define BASE_SPEED 80.0f //110.0f
     #define SURGE_SPEED 120.0f //130.0f
     #define BALL_STR_CLOSE_THRESH 20.0f //20.0f
-    #define BALL_CLOSE_STR 45.28f // higher = wider, lower = closer
+    #define BALL_CLOSE_STR 78.0f // higher = wider, lower = closer
     #define BALL_FRONT_MIN 25.0f //35.0f
     #define BALL_FRONT_MAX 350.0f //345.0f
     #define ORBIT_TARGET_OFFSET 45.0f
     #define ORBIT_DIR_MULTI 0.4f
     #define ORBIT_DIR_EXP 0.15f //0.25f
-    #define ORBIT_DIST_MULTI 8.47979f // 0.0125f
-    #define ORBIT_DIST_EXP -11.64561f //4.5f
+    #define ORBIT_DIST_MULTI 0.0125f // 0.0125f
+    #define ORBIT_DIST_EXP 3.8f //4.5f
 
-    #define DEFEND_CAM_TARGET 300.0
+    #define DEFEND_CAM_TARGET 88.0
     #define DEFEND_MAX_DIST 465.07
     #define LS_THRESH 275
     #define KP_IMU 1.25
     #define KD_IMU 0.04 // 0.04
     #define KP_GOALT 0.6
     #define KD_GOALT 0.0
-    #define KP_VERT 160.0
+    #define KP_VERT 2.0
     #define KP_HOZT 1.2
     #define KP_CVERT 0.6
     #define KP_LOC 0.15
@@ -93,12 +93,13 @@
     #define CAM_CENTER_Y 244
 #else
 // CHAOS
-    #define BASE_SPEED 60.0f //110.0f
+    #define BASE_SPEED 70.0f //110.0f
     #define SURGE_SPEED 100.0f //130.0f
     #define BALL_STR_CLOSE_THRESH 20.0f //20.0f
-    #define BALL_CLOSE_STR 25.0f // lower = narrower, higher = wider
+    #define BALL_CLOSE_STR 30.0f
+    // #define BALL_CLOSE_STR 30.0f // lower = narrower, higher = wider
     #define BALL_FRONT_MIN 35.0f //35.0f
-    #define BALL_FRONT_MAX 359.99f //345.0f
+    #define BALL_FRONT_MAX 330.f //345.0f
     #define ORBIT_TARGET_OFFSET 45.0f
     #define ORBIT_DIR_MULTI 1.20636f //0.4f
     #define ORBIT_DIR_EXP 0.0660224f //0.25f
