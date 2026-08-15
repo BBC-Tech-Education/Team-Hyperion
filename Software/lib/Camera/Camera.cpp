@@ -15,10 +15,14 @@ void Camera::init() {
 void Camera::read() {
     int16_t b1 = CAM_SERIAL.read() - CAM_PIXEL_SHIFT;
     int16_t b2 = CAM_SERIAL.read() - CAM_PIXEL_SHIFT;
-    Serial.print(b1);
-    Serial.print("\t");
-    Serial.print(b2);
-    Serial.print("\t");
+    if (b1 != (CAM_CENTER_X - CAM_PIXEL_SHIFT) && b2 != (CAM_CENTER_Y - CAM_PIXEL_SHIFT)) {
+        blue.setStandard(b1, b2);
+        to_bearing(blue);
+        blueGoalNotVis.update();
+    }
+    
+    b1 = CAM_SERIAL.read() - CAM_PIXEL_SHIFT;
+    b2 = CAM_SERIAL.read() - CAM_PIXEL_SHIFT;
     if (b1 != (CAM_CENTER_X - CAM_PIXEL_SHIFT) && b2 != (CAM_CENTER_Y - CAM_PIXEL_SHIFT)) {
         yellow.setStandard(b1, b2);
         to_bearing(yellow);
@@ -28,21 +32,10 @@ void Camera::read() {
     b1 = CAM_SERIAL.read() - CAM_PIXEL_SHIFT;
     b2 = CAM_SERIAL.read() - CAM_PIXEL_SHIFT;
     if (b1 != (CAM_CENTER_X - CAM_PIXEL_SHIFT) && b2 != (CAM_CENTER_Y - CAM_PIXEL_SHIFT)) {
-        blue.setStandard(b1, b2);
-        to_bearing(blue);
-        blueGoalNotVis.update();
-    }
-
-    b1 = CAM_SERIAL.read() - CAM_PIXEL_SHIFT;
-    b2 = CAM_SERIAL.read() - CAM_PIXEL_SHIFT;
-    if (b1 != (CAM_CENTER_X - CAM_PIXEL_SHIFT) && b2 != (CAM_CENTER_Y - CAM_PIXEL_SHIFT)) {
         ball.setStandard(b1, b2);
         to_bearing(ball);
         ballNotVis.update();
     }
-    Serial.print(b1);
-    Serial.print("\t");
-    Serial.println(b2);
 
     #if DEBUG_CAM_RAW
     Serial.printf("Yellow: (%.1f,%.1f)\tBlue(%.1f, %.1f)\tBall(%.1f, %.1f)\n",

@@ -186,9 +186,13 @@ void calculate_attack() {
     #endif
 
     } else {
-        moveDir = SEARCH_ANGLES[currentSearchIndex];
-        // moveSpd = BASE_SPEED;
-        moveSpd = 40.0f;
+        #if SEARCH_LEG
+        moveDir = float_mod(SEARCH_ANGLES[currentSearchIndex] + bearing, 360.0f);
+        moveSpd = 60.0f;
+        #else
+        moveDir = 0.0f; 
+        moveSpd = 0.0f;
+        #endif
     }
     if (absLineSize != -1.0f) {
         
@@ -379,7 +383,7 @@ void loop() {
             #if DEBUG_MAIN
             Serial.println();
             #endif
-            // Serial.println(attackGoal.arg);
+            Serial.println(attackGoal.arg);
             
             break;
         }
