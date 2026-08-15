@@ -152,6 +152,7 @@ void calculate_attack() {
     float moveCor = 0.0f;
 
     float absBallDir = float_mod(relBallDir + bearing, 360.0f);
+    Serial.println(bearing);
 
     if (relBallStr != 0.0f) {
         wasOnLineLastFrame = false;
@@ -186,13 +187,20 @@ void calculate_attack() {
     #endif
 
     } else {
-        #if SEARCH_LEG
-        moveDir = float_mod(SEARCH_ANGLES[currentSearchIndex] + bearing, 360.0f);
-        moveSpd = 60.0f;
-        #else
-        moveDir = 0.0f; 
-        moveSpd = 0.0f;
-        #endif
+        float angle = normaliseAngle180(bearing);
+        if(angle < 0.0f) {
+            moveDir = 270.0f;
+        } else {
+            moveDir = 90.0f;
+        }
+        moveSpd = 50.0f;
+        // #if SEARCH_LEG
+        // moveDir = float_mod(SEARCH_ANGLES[currentSearchIndex] + bearing, 360.0f);
+        // moveSpd = 60.0f;
+        // #else
+        // moveDir = 0.0f; 
+        // moveSpd = 0.0f;
+        // #endif
     }
     if (absLineSize != -1.0f) {
         
@@ -383,7 +391,6 @@ void loop() {
             #if DEBUG_MAIN
             Serial.println();
             #endif
-            Serial.println(attackGoal.arg);
             
             break;
         }
