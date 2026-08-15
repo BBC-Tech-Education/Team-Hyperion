@@ -2,7 +2,7 @@
 #define CONFIG_H
 
 /////////////////////////////////// ROBOT ID ///////////////////////////////////
-#define CONTROL 0 // control = 1, chaos = 0
+#define CONTROL 1 // control = 1, chaos = 0
 #define OPEN 1
 #define GOAL_TRACKING 1
 // #define LIGHT_SENSORS 0
@@ -74,16 +74,16 @@
     #define ORBIT_DIST_MULTI 0.0125f // 0.0125f
     #define ORBIT_DIST_EXP 3.8f //4.5f
 
-    #define DEFEND_CAM_TARGET 88.0
+    #define DEFEND_CAM_TARGET 68.5
     #define DEFEND_MAX_DIST 465.07
     #define LS_THRESH 275
     #define KP_IMU 1.25
     #define KD_IMU 0.04 // 0.04
-    #define KP_GOALT 0.6
-    #define KD_GOALT 0.0
+    #define KP_GOALT 1.0
+    #define KD_GOALT 0.02
     #define KP_VERT 2.0
-    #define KP_HOZT 1.2
-    #define KP_CVERT 0.6
+    #define KP_HOZT 2.0
+    #define KP_CVERT 13.0
     #define KP_LOC 0.15
     #define KD_LOC 0.0
     #define KP_LAV 100.0

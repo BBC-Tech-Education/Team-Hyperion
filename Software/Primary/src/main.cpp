@@ -256,6 +256,11 @@ void calculate_defend() {
     float moveSpd = sqrtf(hozt*hozt + vert*vert);
     float moveDir = (atan2f(hozt, vert) * RAD_TO_DEG);
     float moveCor = 0.0f;
+
+    if(absLineSize != -1.0f) {
+        moveDir = float_mod(absLineAngle + 180.0f, 360.0f);
+        moveSpd = -lineAvoid.update(absLineSize, -1.0f);
+    }
  
     if(defendGoal.exists()) {
         float goalAngle = float_mod(defendGoal.arg + 180.0f, 360.0f);
