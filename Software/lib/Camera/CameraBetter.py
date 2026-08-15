@@ -4,7 +4,7 @@ import time
 from pyb import UART
 
 widSize = 480
-robot = False
+robot = False #control true, chaos false
 draw = True
 
 CENTER_X = widSize // 2 + 15 # +3 || +15
@@ -33,9 +33,7 @@ if robot:
     goal_thresholds = [(0, 50, -128, 127, -128, -12), (0, 100, -128, 127, 22, 127)]
     ball_threshold = [(38, 100, 29, 127, 25, 127)]
 else:
-    # goal_thresholds = [(30, 100, -128, 35, -128, -18), (0, 100, -128, 127, 12, 127)]
-    # ball_threshold = [(0, 100, 30, 127, 36, 127)]
-    goal_thresholds = [(), ()]
+    goal_thresholds = [(0, 54, -128, -12, -128, 1), (0, 53, -128, 8, 19, 127)]
     ball_threshold = [(0, 82, -128, 127, 40, 127)]
 
 ROI_SIZE = 75
@@ -75,7 +73,7 @@ while True:
 
         yellow = blue = None
         for blob in img.find_blobs(goal_thresholds, x_stride=4, y_stride=4,
-                                   area_threshold=10, pixel_threshold=200, margin=23):
+                                   area_threshold=150, pixel_threshold=200, margin=23):
             if not in_valid_zone(blob):
                 continue
             code = blob.code()
