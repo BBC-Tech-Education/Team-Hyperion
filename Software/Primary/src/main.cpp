@@ -379,6 +379,7 @@ void loop() {
             #if DEBUG_MAIN
             Serial.println();
             #endif
+            // Serial.println(attackGoal.arg);
             
             break;
         }

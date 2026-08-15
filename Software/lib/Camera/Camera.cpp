@@ -8,16 +8,21 @@ void Camera::init() {
     CAM_SERIAL.begin(115200);
     pinMode(GOAL_TRACK_SWITCH, INPUT);
     ballNotVis.update();
+    yellowGoalNotVis.update();
+    blueGoalNotVis.update();
 }
 
 void Camera::read() {
     int16_t b1 = CAM_SERIAL.read() - CAM_PIXEL_SHIFT;
     int16_t b2 = CAM_SERIAL.read() - CAM_PIXEL_SHIFT;
+    Serial.print(b1);
+    Serial.print("\t");
+    Serial.print(b2);
+    Serial.print("\t");
     if (b1 != (CAM_CENTER_X - CAM_PIXEL_SHIFT) && b2 != (CAM_CENTER_Y - CAM_PIXEL_SHIFT)) {
         yellow.setStandard(b1, b2);
         to_bearing(yellow);
-    } else {
-        yellow.setStandard(0, 0);
+        yellowGoalNotVis.update();
     }
 
     b1 = CAM_SERIAL.read() - CAM_PIXEL_SHIFT;
@@ -25,8 +30,7 @@ void Camera::read() {
     if (b1 != (CAM_CENTER_X - CAM_PIXEL_SHIFT) && b2 != (CAM_CENTER_Y - CAM_PIXEL_SHIFT)) {
         blue.setStandard(b1, b2);
         to_bearing(blue);
-    } else {
-        blue.setStandard(0, 0);
+        blueGoalNotVis.update();
     }
 
     b1 = CAM_SERIAL.read() - CAM_PIXEL_SHIFT;
@@ -34,9 +38,11 @@ void Camera::read() {
     if (b1 != (CAM_CENTER_X - CAM_PIXEL_SHIFT) && b2 != (CAM_CENTER_Y - CAM_PIXEL_SHIFT)) {
         ball.setStandard(b1, b2);
         to_bearing(ball);
-        
         ballNotVis.update();
     }
+    Serial.print(b1);
+    Serial.print("\t");
+    Serial.println(b2);
 
     #if DEBUG_CAM_RAW
     Serial.printf("Yellow: (%.1f,%.1f)\tBlue(%.1f, %.1f)\tBall(%.1f, %.1f)\n",
@@ -63,6 +69,12 @@ void Camera::update() {
     }
     if (ballNotVis.time_has_passed_no_update()) {
         ball.setStandard(0, 0);
+    }
+    if(yellowGoalNotVis.time_has_passed_no_update()) {
+        yellow.setStandard(0, 0);
+    }
+    if(blueGoalNotVis.time_has_passed_no_update()) {
+        blue.setStandard(0, 0);
     }
 }
 

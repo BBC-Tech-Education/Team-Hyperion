@@ -22,6 +22,8 @@ private:
     Vect defend{0.0f, 0.0f, false};
 
     Timer ballNotVis{100000};
+    Timer blueGoalNotVis{3000000};
+    Timer yellowGoalNotVis{3000000};
 
     void read();
     void to_bearing(Vect& v);
