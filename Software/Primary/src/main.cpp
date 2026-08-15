@@ -190,14 +190,14 @@ void calculate_attack() {
         float angle = normaliseAngle180(bearing);
         moveDir = (angle < 0.0f)?270.0f:90.0f;
         moveSpd = fabs(localise.update(angle, 0.0f));
-        Serial.println(attackGoal.mag);
-        if(attackGoal.mag != 0.0f && fabs(angle) < 20.0f) {
-            moveDir = 180.0f;
-            moveSpd = 70.0f;
-        } else if(!(attackGoal.mag != 0.0f) && fabs(angle) < 20.0f) {
-            moveDir = SEARCH_ANGLES[currentSearchIndex];
-            moveSpd = 70.0f;
-        }
+        // Serial.println(attackGoal.mag);
+        // if(attackGoal.mag != 0.0f && fabs(angle) < 15.0f) {
+        //     moveDir = 180.0f;
+        //     moveSpd = 70.0f;
+        // } else if(!(attackGoal.mag != 0.0f) && fabs(angle) < 15.0f) {
+        //     moveDir = SEARCH_ANGLES[currentSearchIndex];
+        //     moveSpd = 70.0f;
+        // }
         #else
         moveDir = 0.0f;
         moveSpd = 0.0f;
