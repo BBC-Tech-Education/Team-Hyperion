@@ -5,7 +5,7 @@ from pyb import UART
 
 widSize = 480
 robot = False
-draw = False
+draw = True
 
 CENTER_X = widSize // 2 + 15 # +3 || +15
 CENTER_Y = widSize // 2 - 70 # -50 || -70
