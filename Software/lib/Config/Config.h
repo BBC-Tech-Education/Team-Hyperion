@@ -94,8 +94,8 @@
     #define CAM_CENTER_Y 244
 #else
 // CHAOS
-    #define BASE_SPEED 110.0f //110.0f
-    #define SURGE_SPEED 130.0f //130.0f
+    #define BASE_SPEED 90.0f //110.0f
+    #define SURGE_SPEED 110.0f //130.0f
     #define BALL_STR_CLOSE_THRESH 20.0f //20.0f
     #define BALL_CLOSE_STR 75.0f //65.0f
     // #define BALL_CLOSE_STR 30.0f // lower = narrower, higher = wider
