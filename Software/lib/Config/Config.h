@@ -7,7 +7,7 @@
 #define GOAL_TRACKING 0
 // #define LIGHT_SENSORS 0
 #define ORBIT 1 // enables or disables Orbit
-#define SURGE 1 // enables or disables Surging
+#define SURGE 0 // enables or disables Surging
 #define CAM_BLUE_GOAL 0
 #define USE_COM_MODULE 0 // 1 = COM_MODULE pin, 0 = ENABLE_SWITCH
 #define PID_AUTO_TUNE 0 // 1 = IMU heading PD relay tune (STATE_TUNE), 0 = normal game
@@ -93,10 +93,10 @@
     #define CAM_CENTER_Y 244
 #else
 // CHAOS
-    #define BASE_SPEED 70.0f //110.0f
-    #define SURGE_SPEED 100.0f //130.0f
+    #define BASE_SPEED 90.0f //110.0f
+    #define SURGE_SPEED 110.0f //130.0f
     #define BALL_STR_CLOSE_THRESH 20.0f //20.0f
-    #define BALL_CLOSE_STR 30.0f
+    #define BALL_CLOSE_STR 65.0f
     // #define BALL_CLOSE_STR 30.0f // lower = narrower, higher = wider
     #define BALL_FRONT_MIN 35.0f //35.0f
     #define BALL_FRONT_MAX 330.f //345.0f

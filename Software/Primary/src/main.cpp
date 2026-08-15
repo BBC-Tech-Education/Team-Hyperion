@@ -71,6 +71,10 @@ Vect attackGoal;
 Vect defendGoal;
 Vect ballData;
 
+const float SEARCH_ANGLES[4] = {45.0f, 135.0f, 225.0f, 315.0f};
+uint8_t currentSearchIndex = 0; 
+bool wasOnLineLastFrame = false;
+
 
 /////////////////////////////////// FUNCTIONS /////////////////////////////////
 
@@ -149,87 +153,82 @@ void calculate_attack() {
 
     float absBallDir = float_mod(relBallDir + bearing, 360.0f);
 
-    
-    if(relBallStr != 0.0f) {
+    if (relBallStr != 0.0f) {
+        wasOnLineLastFrame = false;
         float orbitTarget = target;
-        if(attackGoal.exists() && GOAL_TRACKING) {
+        if (attackGoal.exists() && GOAL_TRACKING) {
             orbitTarget = float_mod(bearing, 360.0f);
         }
         
     #if ORBIT
         float dir = normaliseAngle180(float_mod(absBallDir - orbitTarget, 360.0f));
-        // float ballAngDiff = (dir > 0.0f ? 1.0f : -1.0f) * fmin(90.0f, 0.000000722353f*pow(dir, 4) + 0.0000902932f*pow(dir, 3) + 0.0120756f*dir*dir + -0.0403872f*dir);
-        float ballAngDiff = constrain(0.0000447206f*pow(dir, 3) + 0.583361f*dir, -90.0f, 90.0f);
-        float distMulti = constrain(((BALL_CLOSE_STR * ORBIT_DIST_MULTI)/relBallStr)*expf((ORBIT_DIST_EXP*ORBIT_DIST_MULTI)/relBallStr), 0.0f, 1.0f);
+        float ballAngDiff = (dir > 0.0f ? 1.0f : -1.0f) * fmin(90.0f, 0.000000309786f*pow(dir, 4) + 0.0000534514f*pow(dir, 3) + 0.0163822f*dir*dir - 0.00204537f*dir + 10.0f);
+        float distMulti = 0.8f;
         float angleAddition = distMulti * ballAngDiff;
+
         #if SURGE
         surgeTimer--;
-        if(((absBallDir < BALL_FRONT_MIN || absBallDir > BALL_FRONT_MAX) && (relBallStr < BALL_STR_CLOSE_THRESH))) {
-            // moveDir = absBallDir;
+        if (((absBallDir < BALL_FRONT_MIN || absBallDir > BALL_FRONT_MAX) && (relBallStr < BALL_STR_CLOSE_THRESH))) {
             moveDir = 0.0f;
             surgeTimer = 100;
             moveSpd = SURGE_SPEED + 70.0f;
-            Serial.print("SURGE");
-            Serial.print("\t");
-        } else if(surgeTimer > 0) {
+        } else if (surgeTimer > 0) {
             moveDir = 0.0f;
             moveSpd = SURGE_SPEED + 70.0f;
-            Serial.print("SURGE");
-            Serial.print("\t");
         } else {
             moveDir = float_mod(absBallDir + angleAddition, 360.0f);
         }
         #else
         moveDir = float_mod(absBallDir + angleAddition, 360.0f);
         #endif
+
         moveSpd = BASE_SPEED + (SURGE_SPEED - BASE_SPEED) * (1.0f - fabs(angleAddition / 90.0f));
     #endif
-    }
 
-    if(absLineSize > LINE_AVOID_THRESH && relBallStr == 0.0f) {
-        moveDir = float_mod(absLineAngle + 180.0f, 360.0f);
-        moveSpd = -lineAvoid.update(absLineSize, -1.0f);
-    } else if(relBallStr != 0.0f) {
-        if(absLineSize != -1.0f && absLineSize < LINE_AVOID_THRESH) {
-            if(smallestAngleBetween(moveDir, absLineAngle) < 90.0f) {
+    } else {
+        moveDir = SEARCH_ANGLES[currentSearchIndex];
+        // moveSpd = BASE_SPEED;
+        moveSpd = 40.0f;
+    }
+    if (absLineSize != -1.0f) {
+        
+        if (relBallStr == 0.0f) {
+            if (!wasOnLineLastFrame) {
+                currentSearchIndex += 1;
+                currentSearchIndex = currentSearchIndex%3;
+                wasOnLineLastFrame = true;
+            }
+            moveDir = float_mod(absLineAngle + 180.0f, 360.0f);
+            moveSpd = -lineAvoid.update(absLineSize, -1.0f);
+        } 
+        
+        else if (absLineSize < LINE_AVOID_THRESH) {
+            if (smallestAngleBetween(moveDir, absLineAngle) < 90.0f) {
                 moveSpd = sin(smallestAngleBetween(moveDir, absLineAngle) * DEG_TO_RAD) * LS_SLIDE_CONST;
                 float difference = normaliseAngle180(float_mod(moveDir - absLineAngle, 360.0f));
-                if(difference > 0.0f) {
+                if (difference > 0.0f) {
                     moveDir = float_mod(absLineAngle + 90.0f, 360.0f);
                 } else {
                     moveDir = float_mod(absLineAngle - 90.0f, 360.0f);
                 }
             }
-        } else if (absLineSize > LINE_AVOID_THRESH){
+        } else {
             moveDir = float_mod(absLineAngle + 180.0f, 360.0f);
             moveSpd = -lineAvoid.update(absLineSize, -1.0f);
         }
-    } else if(absLineSize != -1.0f) {
-        moveDir = float_mod(absLineAngle + 180.0f, 360.0f);
-        moveSpd = -lineAvoid.update(absLineSize, -1.0f);
+
+    } else {
+        wasOnLineLastFrame = false;
     }
-    
-    if ((attackGoal.exists() && GOAL_TRACKING)) {
+
+    if (attackGoal.exists() && GOAL_TRACKING) {
         float goalAngle = normaliseAngle180(float_mod(attackGoal.arg, 360.0f));
         moveCor = goalTrack.update(goalAngle, 0.0f);
     } else {
         moveCor = -correction.update(normaliseAngle180(bearing), 0.0f);
     }
-    
-    #if DEBUG_MAIN_ATTACK
-    Serial.printf("Move Dir: %.2f\tMove Spd: %.2f\tMove Cor: %.2f\n", moveDir, moveSpd, moveCor);
-    #endif
 
     motors.run(moveSpd, float_mod(moveDir - bearing, 360.0f), moveCor);
-    Serial.print(relBallDir);
-    Serial.print("\t");
-    Serial.print(relBallStr);
-    Serial.print("\t");
-    Serial.print(moveDir);
-    Serial.print("\t");
-    Serial.println(moveSpd);
-    // Serial.print("\t");
-    // Serial.println(surgeTimer);
 }
 
 /// @brief  Performs calculations for our defender strategy, and runs the motors.
