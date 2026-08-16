@@ -272,12 +272,12 @@ void calculate_defend() {
     float moveSpd = sqrtf(hozt*hozt + vert*vert);
     // moveSpd = 0.0f;
     float moveDir = (atan2f(hozt, vert) * RAD_TO_DEG);
-    // Serial.print(relBallDir);
-    // Serial.print("\t");
-    // Serial.println(relBallStr);
+    Serial.print(relBallDir);
+    Serial.print("\t");
+    Serial.println(relBallStr);
     if((relBallDir < BALL_FRONT_MIN || relBallDir > BALL_FRONT_MAX) && (relBallStr < BALL_STR_CLOSE_THRESH && relBallStr != 0.0f)) {
         moveDir = 0.0f;
-        moveSpd = BASE_SPEED;
+        moveSpd = SURGE_SPEED + 70.0f;
     }
     
     float moveCor = 0.0f;
