@@ -16,7 +16,7 @@ if robot:
     INNER_CY = CENTER_Y - 0
 else:
     CENTER_X = widSize // 2 + 18
-    CENTER_Y = widSize // 2 - 50
+    CENTER_Y = widSize // 2 - 55
     MAX_RADIUS = 177
     MIN_RADIUS = 40
     INNER_CX = CENTER_X - 3
@@ -37,7 +37,7 @@ sensor.set_auto_exposure(False, exposure_us=8000)
 uart = UART(3, 115200, timeout_char=100)
 
 if robot:
-    goal_thresholds = [(35, 75, -128, -2, -128, -3), (45, 57, 5, 127, 23, 127)]
+    goal_thresholds = [(35, 75, -128, -2, -128, -3), (0, 56, -128, 127, 29, 127)]
     ball_threshold = [(48, 100, 41, 127, -5, 127)]
 else:
     goal_thresholds = [(34, 58, -128, -1, -128, 6), (39, 50, -2, 127, 16, 127)]

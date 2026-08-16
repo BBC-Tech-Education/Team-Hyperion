@@ -81,8 +81,8 @@
     #define KD_IMU 0.04 // 0.04
     #define KP_GOALT 1.0
     #define KD_GOALT 0.02
-    #define KP_VERT 2.0
-    #define KP_HOZT 1.3
+    #define KP_VERT 2.5
+    #define KP_HOZT 1.8
     #define KP_CVERT 13.0
     #define KP_LOC 0.15
     #define KD_LOC 0.0

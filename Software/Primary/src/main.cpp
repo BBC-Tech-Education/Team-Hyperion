@@ -153,6 +153,10 @@ void calculate_attack() {
 
     float absBallDir = float_mod(relBallDir + bearing, 360.0f);
 
+    Serial.print(relBallDir);
+    Serial.print("\t");
+    Serial.println(relBallStr);
+
     if (relBallStr != 0.0f) {
         wasOnLineLastFrame = false;
         float orbitTarget = target;
@@ -248,19 +252,30 @@ void calculate_attack() {
 void calculate_defend() {
     float hoztInput = (relBallStr != 0.0f) ? -normaliseAngle180(relBallDir) : normaliseAngle180(bearing);
     float hozt = horizontal.update(hoztInput, 0.0f);
- 
+    if(relBallStr == 0.0f) {
+        hozt = 0.0f;
+    }
+    if(fabs(hozt) < 7.0f) {
+        hozt = 0.0f;
+    }
     float vert = 0.0f;
     if (defendGoal.exists()) {
         vert = vertCam.update(defendGoal.mag, DEFEND_CAM_TARGET);
+    } else {
+        vert = -70.0f;
     }
+    if(fabs(vert) < 20.0f) {
+        vert = 0.0f;
+    }
+
     // Serial.println(defendGoal.mag);
     float moveSpd = sqrtf(hozt*hozt + vert*vert);
     // moveSpd = 0.0f;
     float moveDir = (atan2f(hozt, vert) * RAD_TO_DEG);
-    Serial.print(relBallDir);
-    Serial.print("\t");
-    Serial.println(relBallStr);
-    if((relBallDir < BALL_FRONT_MIN || relBallDir > BALL_FRONT_MAX) && relBallStr < BALL_STR_CLOSE_THRESH) {
+    // Serial.print(relBallDir);
+    // Serial.print("\t");
+    // Serial.println(relBallStr);
+    if((relBallDir < BALL_FRONT_MIN || relBallDir > BALL_FRONT_MAX) && (relBallStr < BALL_STR_CLOSE_THRESH && relBallStr != 0.0f)) {
         moveDir = 0.0f;
         moveSpd = BASE_SPEED;
     }
