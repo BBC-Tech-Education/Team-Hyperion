@@ -64,9 +64,9 @@
 //CONTROL
     #define BASE_SPEED 80.0f //110.0f
     #define SURGE_SPEED 120.0f //130.0f
-    #define BALL_STR_CLOSE_THRESH 20.0f //20.0f
+    #define BALL_STR_CLOSE_THRESH 50.0f //20.0f
     #define BALL_CLOSE_STR 78.0f // higher = wider, lower = closer
-    #define BALL_FRONT_MIN 25.0f //35.0f
+    #define BALL_FRONT_MIN 15.0f //35.0f
     #define BALL_FRONT_MAX 350.0f //345.0f
     #define ORBIT_TARGET_OFFSET 45.0f
     #define ORBIT_DIR_MULTI 0.4f
@@ -74,7 +74,7 @@
     #define ORBIT_DIST_MULTI 0.0125f // 0.0125f
     #define ORBIT_DIST_EXP 3.8f //4.5f
 
-    #define DEFEND_CAM_TARGET 69.5
+    #define DEFEND_CAM_TARGET 70.0
     #define DEFEND_MAX_DIST 465.07
     #define LS_THRESH 275
     #define KP_IMU 1.25

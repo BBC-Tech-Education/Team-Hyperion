@@ -253,9 +253,18 @@ void calculate_defend() {
     if (defendGoal.exists()) {
         vert = vertCam.update(defendGoal.mag, DEFEND_CAM_TARGET);
     }
+    // Serial.println(defendGoal.mag);
     float moveSpd = sqrtf(hozt*hozt + vert*vert);
     // moveSpd = 0.0f;
     float moveDir = (atan2f(hozt, vert) * RAD_TO_DEG);
+    Serial.print(relBallDir);
+    Serial.print("\t");
+    Serial.println(relBallStr);
+    if((relBallDir < BALL_FRONT_MIN || relBallDir > BALL_FRONT_MAX) && relBallStr < BALL_STR_CLOSE_THRESH) {
+        moveDir = 0.0f;
+        moveSpd = BASE_SPEED;
+    }
+    
     float moveCor = 0.0f;
 
     if(absLineSize != -1.0f) {
