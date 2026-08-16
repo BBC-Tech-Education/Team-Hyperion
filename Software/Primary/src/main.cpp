@@ -254,6 +254,7 @@ void calculate_defend() {
         vert = vertCam.update(defendGoal.mag, DEFEND_CAM_TARGET);
     }
     float moveSpd = sqrtf(hozt*hozt + vert*vert);
+    // moveSpd = 0.0f;
     float moveDir = (atan2f(hozt, vert) * RAD_TO_DEG);
     float moveCor = 0.0f;
 
