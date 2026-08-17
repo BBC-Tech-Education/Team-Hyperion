@@ -5,7 +5,6 @@
 #define CONTROL 1 // control = 1, chaos = 0
 #define OPEN 1
 #define GOAL_TRACKING 1
-// #define LIGHT_SENSORS 0
 #define ORBIT 1 // enables or disables Orbit
 #define SURGE 0 // enables or disables Surging
 #define LOCALISATION 1
