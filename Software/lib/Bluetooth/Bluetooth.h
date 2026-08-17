@@ -1,38 +1,31 @@
 #ifndef BLUETOOTH_H
 #define BLUETOOTH_H
 
-#include "Config.h"
-#include "Timer.h"
+#include <Arduino.h>
+#include <Timer.h>
 
-struct PeerData {
-    bool role = false;
-    bool enabled = false;
-    uint8_t score = 0;
-    uint8_t ballStr = 0;
-    uint8_t batLvl = 0;
+struct CommunicationData {
+    bool role = false; // sent & read
+    bool enabled = false; // sent & read
+    bool attackCone = false; // sent & read
+    uint8_t ballStr = 0; // sent & read
 };
 
 class Bluetooth {
 public:
     void init();
-    void update(uint8_t score, uint8_t ballStr, bool enabled, uint8_t batLvl);
+    void update(bool enabled, float ballDir, float ballStr);
 
-    bool get_role() const { return self.role; }
-    bool is_other_connected() const { return connected; }
-
+    bool get_role() { return self.role; };
 private:
     void read();
     void send();
-    void resolve_role();
+    void calculate_role();
 
-    PeerData self;
-    PeerData other;
-
-    Timer connectedTimer = Timer(BT_CONNECTION_TIMEOUT_US);
-
-    bool switching = false;
-    bool connected = false;
-    bool otherPrevRole = false;
+    CommunicationData self;
+    CommunicationData other;
+    
+    Timer pairedTimer(BT_CONNECTION_TIMEOUT_US);
 };
 
 #endif
