@@ -322,7 +322,6 @@ void update_battery_led() {
 
 
 void setup() {
-    // test commit
 #if PID_AUTO_TUNE
     state = STATE_TUNE;
     headingTune.begin();
