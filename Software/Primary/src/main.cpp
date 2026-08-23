@@ -21,7 +21,6 @@ Adafruit_BNO055 bno(BNO055_SENSOR_ID, BNO055_ADDRESS_B, &Wire);
 Camera cam;
 DriveSystem motors;
 LightSystem ls;
-Bluetooth bt;
 
 // PIDs
 PID correction(KP_IMU, 0.0, KD_IMU, IMU_PID_MAX);
@@ -63,10 +62,6 @@ float batLvl = 0.0f;
 Vect attackGoal;
 Vect defendGoal;
 Vect ballData;
-
-const float SEARCH_ANGLES[4] = {45.0f, 135.0f, 225.0f, 315.0f};
-uint8_t currentSearchIndex = 0; 
-bool wasOnLineLastFrame = false;
 
 
 /////////////////////////////////// FUNCTIONS /////////////////////////////////
@@ -127,7 +122,6 @@ void calculate_attack() {
     Serial.println(relBallStr);
 
     if (relBallStr != 0.0f) {
-        wasOnLineLastFrame = false;
         float orbitTarget = target;
         if (attackGoal.exists() && GOAL_TRACKING) {
             orbitTarget = float_mod(bearing, 360.0f);
@@ -163,14 +157,6 @@ void calculate_attack() {
         float angle = normaliseAngle180(bearing);
         moveDir = (angle < 0.0f)?270.0f:90.0f;
         moveSpd = fabs(localise.update(angle, 0.0f));
-        // Serial.println(attackGoal.mag);
-        // if(attackGoal.mag != 0.0f && fabs(angle) < 15.0f) {
-        //     moveDir = 180.0f;
-        //     moveSpd = 70.0f;
-        // } else if(!(attackGoal.mag != 0.0f) && fabs(angle) < 15.0f) {
-        //     moveDir = SEARCH_ANGLES[currentSearchIndex];
-        //     moveSpd = 70.0f;
-        // }
         #else
         moveDir = 0.0f;
         moveSpd = 0.0f;
@@ -179,11 +165,6 @@ void calculate_attack() {
     if (absLineSize != -1.0f) {
         
         if (relBallStr == 0.0f) {
-            if (!wasOnLineLastFrame) {
-                currentSearchIndex += 1;
-                currentSearchIndex = currentSearchIndex%3;
-                wasOnLineLastFrame = true;
-            }
             moveDir = float_mod(absLineAngle + 180.0f, 360.0f);
             moveSpd = -lineAvoid.update(absLineSize, -1.0f);
         } 
@@ -203,8 +184,6 @@ void calculate_attack() {
             moveSpd = -lineAvoid.update(absLineSize, -1.0f);
         }
 
-    } else {
-        wasOnLineLastFrame = false;
     }
 
     if (attackGoal.exists() && GOAL_TRACKING) {
