@@ -1,21 +1,18 @@
 #include <Arduino.h>
 #include "Adafruit_BNO055.h"
-#include "Bluetooth.h"
 #include "Camera.h"
 #include "Common.h"
 #include "Config.h"
 #include "Drive_system.h"
 #include "Light_system.h"
 #include "PID.h"
-#include "PID_Autotune.h"
 #include "Timer.h"
 #include "Voltage_divider.h"
 
 ///////////////////////////////////// FSMs ////////////////////////////////////
 enum RobotState {
     STATE_IDLE,
-    STATE_GAME,
-    STATE_TUNE
+    STATE_GAME
 };
 
 //////////////////////////////////// OBJECTS //////////////////////////////////
@@ -34,10 +31,6 @@ PID vertical(KP_VERT, 0.0, 0.0);
 PID vertCam(KP_CVERT, 0.0, 0.0);
 PID lineAvoid(KP_LAV, 0.0, KD_LAV, LAV_PID_MAX);
 PID localise(KP_LOC, 0.0, KD_LOC, LOC_PID_MAX);
-
-#if PID_AUTO_TUNE
-HeadingPIDAutotune headingTune;
-#endif
 
 // VOLTAGE DIVIDERS
 VoltageDivider battery(ROBOT_VD_PIN, ROBOT_VOLTAGE_STABALISER, ROBOT_VOLTAGE_OFFSET);
@@ -77,30 +70,6 @@ bool wasOnLineLastFrame = false;
 
 
 /////////////////////////////////// FUNCTIONS /////////////////////////////////
-
-/// @brief  Used to recieve data from the Secondary Teensy 4.1 over UART.
-///         Updates both ball direction and strength when run.
-void update_ball()
-{
-    while(Serial1.available() >= TSSP_PACKET_SIZE) {
-        uint8_t b1 = Serial1.read();
-        uint8_t b2 = Serial1.peek();
-        
-        if(b1 == TSSP_START_BYTE_1 && b2 == TSSP_START_BYTE_2) {
-            Serial1.read();
-            uint8_t ball1 = Serial1.read();
-            uint8_t ball2 = Serial1.read();
-            uint16_t reconstructedBall = (ball1 << 8) | ball2;
-            
-            relBallDir = (float)(reconstructedBall / BALL_DIR_DIVISOR);
-            relBallStr = Serial1.read();
-
-            #if DEBUG_TSSP_BALL
-            Serial.printf("Dir: %.2f\tStr: %d\n", relBallDir, relBallStr);
-            #endif
-        }
-    }
-}
 
 /// @brief  Performs calculations with the light sensor library to achieve a
 ///         line angle that is relative to the field rather than the robot.
@@ -255,33 +224,22 @@ void calculate_defend() {
     if(relBallStr == 0.0f) {
         hozt = 0.0f;
     }
-    if(fabs(hozt) < 7.0f) {
-        hozt = 0.0f;
-    }
+
     float vert = 0.0f;
     if (defendGoal.exists()) {
         vert = vertCam.update(defendGoal.mag, DEFEND_CAM_TARGET);
     } else {
         vert = -70.0f;
     }
-    if(fabs(vert) < 20.0f) {
-        vert = 0.0f;
-    }
 
-    // Serial.println(defendGoal.mag);
     float moveSpd = sqrtf(hozt*hozt + vert*vert);
-    // moveSpd = 0.0f;
     float moveDir = (atan2f(hozt, vert) * RAD_TO_DEG);
-    Serial.print(relBallDir);
-    Serial.print("\t");
-    Serial.println(relBallStr);
     if((relBallDir < BALL_FRONT_MIN || relBallDir > BALL_FRONT_MAX) && (relBallStr < BALL_STR_CLOSE_THRESH && relBallStr != 0.0f)) {
         moveDir = 0.0f;
         moveSpd = SURGE_SPEED + 70.0f;
     }
     
     float moveCor = 0.0f;
-
     if(absLineSize != -1.0f) {
         moveDir = float_mod(absLineAngle + 180.0f, 360.0f);
         moveSpd = -lineAvoid.update(absLineSize, -1.0f);
@@ -298,7 +256,7 @@ void calculate_defend() {
     Serial.printf("Move Dir: %.2f\tMove Spd: %.2f\tMove Cor: %.2f\n", moveDir, moveSpd, moveCor);
     Serial.printf("Hozt: %.2f\tVert: %.2f\n", hozt, vert);
     #endif
-    if(relBallDir > 90 && relBallDir < 270) {
+    if(relBallDir > 90.0f && relBallDir < 270.0f) {
         calculate_attack();
     } else {
         motors.run(moveSpd, float_mod(moveDir - bearing, 360.0f), moveCor);
@@ -322,18 +280,8 @@ void update_battery_led() {
 
 
 void setup() {
-#if PID_AUTO_TUNE
-    state = STATE_TUNE;
-    headingTune.begin();
-#else
     state = STATE_IDLE;
-#endif
-
-    delay(100);
     Serial.begin(SERIAL_BAUD_RATE);
-#if PID_AUTO_TUNE
-    Serial.println(F("PID_AUTO_TUNE=1 - STATE_TUNE (IMU heading PD)"));
-#endif
 
     while (!bno.begin(OPERATION_MODE_IMUPLUS)) {
         Serial.println("No BNO055 detected.");
@@ -378,14 +326,9 @@ void loop() {
             cam.update();
             attackGoal = cam.get_attack();
             defendGoal = cam.get_defend();
-
-            #if not OPEN
-            update_ball();
-            #else
             ballData = cam.get_ball();
             relBallDir = ballData.arg;
             relBallStr = ballData.mag;
-            #endif
             
             ls.update();
             update_absolute_line();
@@ -425,21 +368,5 @@ void loop() {
             
             break;
         }
-
-#if PID_AUTO_TUNE
-        case STATE_TUNE: {
-            bno.getEvent(&event);
-            bearing = float_mod(event.orientation.x - target, 360.0f);
-            headingTune.update(motorsOn, bearing, motors);
-            Serial.print(headingTune.kp());
-            Serial.print("\t");
-            Serial.println(headingTune.kd());
-            #if DEBUG_MAIN_STATE
-            Serial.printf("STATE_TUNE enable=%d finished=%d hasResult=%d\n",
-                          motorsOn, headingTune.finished(), headingTune.hasResult());
-            #endif
-            break;
-        }
-#endif
     };
 }

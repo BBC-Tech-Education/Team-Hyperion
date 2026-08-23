@@ -1,28 +1,30 @@
+# OpenMV Camera Code with Goal Tracking via Region of Interest (ROI)
 import sensor
 import time
 from pyb import UART
 
-# --- Configuration & Settings ---
-exposure = 3000
 widSize = 480
-robot = False # Chaos = False, Control = True
-draw = True
+robot = True # control true, chaos false
+draw = False
 
-# --- Useable Zone Settings ---
-CENTER_X = int(widSize / 2) + 3
-CENTER_Y = int(widSize / 2) - 15
-MAX_RADIUS = 200
-MIN_RADIUS = 45
-INNER_OFFSET_X = -0
-INNER_OFFSET_Y = -50
-OUTER_OFFSET_Y = -30
-INNER_CX = CENTER_X + INNER_OFFSET_X
-INNER_CY = CENTER_Y + INNER_OFFSET_Y
-OUTER_CY = CENTER_Y + OUTER_OFFSET_Y
-MIN_RADIUS_SQ = MIN_RADIUS ** 2
-MAX_RADIUS_SQ = MAX_RADIUS ** 2
+if robot:
+    CENTER_X = widSize // 2 + 17
+    CENTER_Y = widSize // 2 - 50
+    MAX_RADIUS = 200
+    MIN_RADIUS = 47
+    INNER_CX = CENTER_X - 3
+    INNER_CY = CENTER_Y - 0
+else:
+    CENTER_X = widSize // 2 + 18
+    CENTER_Y = widSize // 2 - 55
+    MAX_RADIUS = 177
+    MIN_RADIUS = 40
+    INNER_CX = CENTER_X - 3
+    INNER_CY = CENTER_Y - 5
+MIN_RADIUS_SQ = MIN_RADIUS * MIN_RADIUS
+MAX_RADIUS_SQ = MAX_RADIUS * MAX_RADIUS
+ORIGIN = widSize // 2
 
-# --- Camera Settings ---
 sensor.reset()
 sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.VGA)
@@ -30,148 +32,124 @@ sensor.set_windowing((widSize, widSize))
 sensor.skip_frames(time=2000)
 sensor.set_auto_gain(False, gain_db=22.0)
 sensor.set_auto_whitebal(False, rgb_gain_db=(0.0, 0.0, 0.0))
-sensor.set_auto_exposure(False, exposure_us=30000)
+sensor.set_auto_exposure(False, exposure_us=8000)
 
-# --- UART Settings ---
-clock = time.clock()
 uart = UART(3, 115200, timeout_char=100)
 
-# --- Frame Buffer Settings ---
-ROI_SIZE = 75
+if robot:
+    goal_thresholds = [(35, 75, -128, -2, -128, -3), (0, 56, -128, 127, 29, 127)]
+    ball_threshold = [(48, 100, 41, 127, -5, 127)]
+else:
+    goal_thresholds = [(34, 58, -128, -1, -128, 6), (39, 50, -2, 127, 16, 127)]
+    ball_threshold = [(39, 100, 29, 127, 33, 127)]
+
+ROI_SIZE_BALL = 75
+ROI_SIZE_GOAL = 120
 MAX_LOST_FRAMES = 10
-last_ball_x = CENTER_X
-last_ball_y = CENTER_Y
+
+last_ball_x, last_ball_y = CENTER_X, CENTER_Y
 lost_ball_count = MAX_LOST_FRAMES
 
-# --- Threshold Values ---
-if robot:
-    goal_thresholds = [(0, 38, -128, 11, -128, -16), (0, 100, -128, 127, 12, 127)]
-    ball_threshold = [(38, 100, 29, 127, 25, 127)]
-else:
-    # goal_thresholds = [(30, 100, -128, 35, -128, -18), (0, 100, -128, 127, 12, 127)]
-    # ball_threshold = [(0, 100, 30, 127, 36, 127)]
-    goal_thresholds = [(), ()]
-    ball_threshold = [(0, 100, 25, 127, 0, 127)]
+last_yellow_x, last_yellow_y = CENTER_X, CENTER_Y
+lost_yellow_count = MAX_LOST_FRAMES
 
+last_blue_x, last_blue_y = CENTER_X, CENTER_Y
+lost_blue_count = MAX_LOST_FRAMES
 
-# Data array persists across frames now.
-# Index 0: Goal 1, Index 1: Goal 2, Index 2: Ball
-data = [[CENTER_X, CENTER_Y], [CENTER_X, CENTER_Y], [CENTER_X, CENTER_Y]]
+data = [[ORIGIN, ORIGIN], [ORIGIN, ORIGIN], [ORIGIN, ORIGIN]]
 
-# --- Goal Scan Delay ---
-frame_counter = 0  # Frame counter for time-slicing
-GOAL_UPDATE_RATE = 4  # Delay between frames to scan for goals
-
-
-# Data array persists across frames now.
-# Index 0: Goal 1, Index 1: Goal 2, Index 2: Ball
-data = [[CENTER_X, CENTER_Y], [CENTER_X, CENTER_Y], [CENTER_X, CENTER_Y]]
-
-# --- Goal Scan Delay ---
-frame_counter = 0  # Frame counter for time-slicing
-GOAL_UPDATE_RATE = 4  # Delay between frames to scan for goals
+clock = time.clock()
 
 
 def in_valid_zone(blob):
-    '''Determinds if a blob is within the valid bounds'''
-    inner_dist_sq = (blob.cx() - INNER_CX)**2 + (blob.cy() - INNER_CY)**2
-    if inner_dist_sq <= MIN_RADIUS_SQ:
+    dx = blob.cx() - INNER_CX
+    dy = blob.cy() - INNER_CY
+    if dx * dx + dy * dy <= MIN_RADIUS_SQ:
         return False
-    outer_dist_sq = (blob.cx() - CENTER_X)**2 + (blob.cy() - OUTER_CY)**2
-    return outer_dist_sq < MAX_RADIUS_SQ
+    dx = blob.cx() - CENTER_X
+    dy = blob.cy() - CENTER_Y
+    return dx * dx + dy * dy < MAX_RADIUS_SQ
+
+
+def to_mirror(cx, cy):
+    return ORIGIN + CENTER_X - cx, ORIGIN + CENTER_Y - cy
+
+
+def get_roi(last_x, last_y, roi_size, lost_count):
+    if lost_count < MAX_LOST_FRAMES:
+        x = max(0, last_x - roi_size // 2)
+        y = max(0, last_y - roi_size // 2)
+        return (x, y, min(roi_size, widSize - x), min(roi_size, widSize - y))
+    return (0, 0, widSize, widSize)
 
 
 while True:
     clock.tick()
     img = sensor.snapshot()
-    frame_counter += 1
+    data[2][0] = data[2][1] = 488
 
-    # We always reset the ball data so we don't send ghost ball data if it's lost
-    data[2][0], data[2][1] = 488, 488
+    yellow_roi = get_roi(last_yellow_x, last_yellow_y, ROI_SIZE_GOAL, lost_yellow_count)
+    blue_roi = get_roi(last_blue_x, last_blue_y, ROI_SIZE_GOAL, lost_blue_count)
 
-    # --- GOAL TRACKING (Time-Sliced) ---
-    if (frame_counter % GOAL_UPDATE_RATE == 0):
-        # Reset goal data only on the frames we actually scan for them
-        data[0][0], data[0][1] = CENTER_X, CENTER_Y
-        data[1][0], data[1][1] = CENTER_X, CENTER_Y
+    yellow = blue = None
 
-        # Stride increased to 4 for massive performance gain on background scans
-        goal_blobs = img.find_blobs(goal_thresholds, x_stride=4, y_stride=4, area_threshold=10,
-                                    pixel_threshold=200, merge=False, margin=23)
-        goal_blobs = sorted(goal_blobs, key=lambda blob: -blob.area())
+    for blob in img.find_blobs([goal_thresholds[0]], roi=yellow_roi, x_stride=4, y_stride=4,
+                               area_threshold=150, pixel_threshold=200, margin=23):
+        if in_valid_zone(blob) and (yellow is None or blob.area() > yellow.area()):
+            yellow = blob
 
-        for blob in goal_blobs:
-            if in_valid_zone(blob):
-                if (blob.code() == 1) and (data[0] == [CENTER_X, CENTER_Y]):
-                    data[0][0] = widSize - blob.cx()
-                    data[0][1] = widSize - blob.cy()
-                    if draw:
-                        img.draw_rectangle(blob.rect(), color=(0, 0, 255))
-                elif (blob.code() == 2) and (data[1] == [CENTER_X, CENTER_Y]):
-                    data[1][0] = widSize - blob.cx()
-                    data[1][1] = widSize - blob.cy()
-                    if draw:
-                        img.draw_rectangle(blob.rect(), color=(255, 255, 0))
-            else:
-                if draw:
-                    img.draw_rectangle(blob.rect(), color=(255, 0, 0))
-                    img.draw_cross(blob.cx(), blob.cy(), color=(255, 0, 0))
-    else:
-        # If we skipped scanning this frame, optionally draw crosses at the cached goal locations
+    for blob in img.find_blobs([goal_thresholds[1]], roi=blue_roi, x_stride=4, y_stride=4,
+                               area_threshold=150, pixel_threshold=200, margin=23):
+        if in_valid_zone(blob) and (blue is None or blob.area() > blue.area()):
+            blue = blob
+
+    if yellow:
+        data[0][0], data[0][1] = to_mirror(yellow.cx(), yellow.cy())
+        last_yellow_x, last_yellow_y = yellow.cx(), yellow.cy()
+        lost_yellow_count = 0
         if draw:
-            if data[0] != [CENTER_X, CENTER_Y]:
-                img.draw_cross(widSize - data[0][0], widSize - data[0][1], color=(0, 0, 255))
-            if data[1] != [CENTER_X, CENTER_Y]:
-                img.draw_cross(widSize - data[1][0], widSize - data[1][1], color=(255, 255, 0))
-
-    current_roi = (0, 0, widSize, widSize)
-    if lost_ball_count < MAX_LOST_FRAMES:
-        roi_x = max(0, last_ball_x - (ROI_SIZE // 2))
-        roi_y = max(0, last_ball_y - (ROI_SIZE // 2))
-        roi_w = min(ROI_SIZE, widSize - roi_x)
-        roi_h = min(ROI_SIZE, widSize - roi_y)
-        current_roi = (roi_x, roi_y, roi_w, roi_h)
-        if draw:
-            img.draw_rectangle(current_roi, color=(0, 255, 0))
-
-    # Ball stride remains at 1 because it's a small object inside a small ROI
-    ball_blobs = img.find_blobs(ball_threshold, roi=current_roi, x_stride=1, y_stride=1, area_threshold=9,
-                                pixel_threshold=9, merge=True, margin=5)
-    ball_blobs = sorted(ball_blobs, key=lambda blob: -blob.area())
-
-    ball_found_this_frame = False
-
-    for blob in ball_blobs:
-        if in_valid_zone(blob):
-            if data[2] == [488, 488]:
-                data[2][0] = widSize - blob.cx()
-                data[2][1] = widSize - blob.cy()
-                last_ball_x = blob.cx()
-                last_ball_y = blob.cy()
-                ball_found_this_frame = True
-
-                if draw:
-                    img.draw_rectangle(blob.rect(), color=(255, 165, 0))
-                    img.draw_line(INNER_CX, INNER_CY, blob.cx(), blob.cy(), color=(255, 165, 0), thickness=2)
-                break
-        else:
-            if draw:
-                img.draw_rectangle(blob.rect(), color=(255, 0, 0))
-                img.draw_cross(blob.cx(), blob.cy(), color=(255, 0, 0))
-
-    if not ball_found_this_frame:
-        lost_ball_count += 1
+            img.draw_rectangle(yellow.rect(), color=(0, 0, 255))
     else:
+        lost_yellow_count += 1
+        data[0] = [ORIGIN, ORIGIN]
+
+    if blue:
+        data[1][0], data[1][1] = to_mirror(blue.cx(), blue.cy())
+        last_blue_x, last_blue_y = blue.cx(), blue.cy()
+        lost_blue_count = 0
+        if draw:
+            img.draw_rectangle(blue.rect(), color=(255, 255, 0))
+    else:
+        lost_blue_count += 1
+        data[1] = [ORIGIN, ORIGIN]
+
+    ball_roi = get_roi(last_ball_x, last_ball_y, ROI_SIZE_BALL, lost_ball_count)
+    if draw and lost_ball_count < MAX_LOST_FRAMES:
+        img.draw_rectangle(ball_roi, color=(0, 255, 0))
+
+    blob = None
+    for b in img.find_blobs(ball_threshold, roi=ball_roi, x_stride=1, y_stride=1,
+                            area_threshold=9, pixel_threshold=9, merge=True, margin=5):
+        if in_valid_zone(b) and (blob is None or b.area() > blob.area()):
+            blob = b
+
+    if blob:
+        data[2][0], data[2][1] = to_mirror(blob.cx(), blob.cy())
+        last_ball_x, last_ball_y = blob.cx(), blob.cy()
         lost_ball_count = 0
+        if draw:
+            img.draw_rectangle(blob.rect(), color=(255, 165, 0))
+            img.draw_line(CENTER_X, CENTER_Y, blob.cx(), blob.cy(), color=(255, 165, 0), thickness=2)
+    else:
+        lost_ball_count += 1
 
     if draw:
-        img.draw_circle(CENTER_X, OUTER_CY, MAX_RADIUS, color=(255, 255, 255), thickness=2)
+        img.draw_circle(CENTER_X, CENTER_Y, MAX_RADIUS, color=(255, 255, 255), thickness=2)
         img.draw_circle(INNER_CX, INNER_CY, MIN_RADIUS, color=(255, 0, 0), thickness=2)
 
+    # print(data[1])
     uart.writechar(255)
     uart.writechar(250)
-    for item in data:
-        uart.writechar(item[0] >> 1)
-        uart.writechar(item[1] >> 1)
-
-    print(item)
+    for x, y in data:
+        uart.writechar(x >> 1)
+        uart.writechar(y >> 1)

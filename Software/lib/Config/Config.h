@@ -3,14 +3,12 @@
 
 /////////////////////////////////// ROBOT ID ///////////////////////////////////
 #define CONTROL 1 // control = 1, chaos = 0
-#define OPEN 1
 #define GOAL_TRACKING 1
 #define ORBIT 1 // enables or disables Orbit
 #define SURGE 0 // enables or disables Surging
 #define LOCALISATION 1
 #define CAM_BLUE_GOAL 0
 #define USE_COM_MODULE 0 // 1 = COM_MODULE pin, 0 = ENABLE_SWITCH
-#define PID_AUTO_TUNE 0 // 1 = IMU heading PD relay tune (STATE_TUNE), 0 = normal game
 
 //////////////////////////////////// DEBUG ////////////////////////////////////
 
@@ -132,16 +130,6 @@
 
 #define BNO055_SENSOR_ID 55
 #define IMU_PID_MAX 100.0f
-
-// --- PID AUTO TUNE (heading correction) ---
-#define TUNE_RELAY_COR 50.0f
-#define TUNE_HYSTERESIS_DEG 4.0f
-#define TUNE_MIN_CYCLES 3
-#define TUNE_TIMEOUT_MS 30000UL
-#define TUNE_KP_MAX 1.5f
-#define TUNE_KD_FRAC 0.2f
-#define TUNE_PRINT_INTERVAL_MS 500UL
-#define TUNE_MIN_AMPLITUDE_DEG 2.0f
 
 #define GOALT_PID_MAX 100.0f
 #define LAV_PID_MAX 150.0f
