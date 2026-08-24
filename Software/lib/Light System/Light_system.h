@@ -3,6 +3,7 @@
 
 #include "Pins.h"
 #include "Config.h"
+#include "Vect.h"
 
 
 class LightSystem {
@@ -10,8 +11,7 @@ public:
     void init();
     void update();
 
-    float get_line_angle();
-    float get_line_size();
+    Vect get_line_vector() {return lineVector.setPolar(lineSize,lineDir);};
 
 private:
     void read();
@@ -39,6 +39,7 @@ private:
 
     float lineDir;
     float lineSize;
+    Vect lineVector;
 };
 
 #endif
