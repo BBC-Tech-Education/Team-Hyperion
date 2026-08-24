@@ -9,12 +9,12 @@ void Bluetooth::update(bool enabled, float ballDir, float ballStr) {
     self.enabled = enabled;
     self.ballStr = (ballStr > 255.0f) ? 255 : (uint8_t)ballStr;
     self.attackCone = (ballDir > BALL_FRONT_MAX || ballDir < BALL_FRONT_MIN);
-    if(sendTimer.timeHasPassed()) {
+    if(sendTimer.time_has_passed()) {
         send();
     }
     read();
 
-    connected = !connectedTimer.timeHasPassedNoUpdate();
+    connected = !connectedTimer.time_has_passed_no_update();
     calculate_role();
 }
 
@@ -52,7 +52,7 @@ void Bluetooth::calculate_role() {
         self.role = !self.role;
         roleConflict.update();
     } else if(self.role == other.role) {
-        if(roleConflict.timeHasPassedNoUpdate()) {
+        if(roleConflict.time_has_passed_no_update()) {
             self.role = self.ballStr < other.ballStr;
             roleConflict.update();
         }

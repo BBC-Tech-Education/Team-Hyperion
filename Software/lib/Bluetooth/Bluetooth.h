@@ -26,9 +26,9 @@ private:
     CommunicationData self;
     CommunicationData other;
     
-    Timer sendTimer(BT_SEND_TIMER_US);
-    Timer roleConflict(BT_ROLE_CONFLICT_TIMER_US);
-    Timer connectedTimer(BT_CONNECTION_TIMEOUT_US);
+    Timer sendTimer{BT_SEND_TIMER_US};
+    Timer roleConflict{BT_ROLE_CONFLICT_TIMER_US};
+    Timer connectedTimer{BT_CONNECTION_TIMEOUT_US};
 
     bool connected = false;
     bool otherPreviousRole = false;
