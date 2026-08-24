@@ -2,7 +2,8 @@
 #define BLUETOOTH_H
 
 #include <Arduino.h>
-#include <Timer.h>
+#include "Timer.h"
+#include "Config.h"
 
 struct CommunicationData {
     bool role = false; // sent & read
@@ -25,7 +26,13 @@ private:
     CommunicationData self;
     CommunicationData other;
     
-    Timer pairedTimer(BT_CONNECTION_TIMEOUT_US);
+    Timer sendTimer(BT_SEND_TIMER_US);
+    Timer roleConflict(BT_ROLE_CONFLICT_TIMER_US);
+    Timer connectedTimer(BT_CONNECTION_TIMEOUT_US);
+
+    bool connected = false;
+    bool otherPreviousRole = false;
+    bool switching = false;
 };
 
 #endif

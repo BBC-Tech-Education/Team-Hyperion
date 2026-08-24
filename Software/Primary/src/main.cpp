@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "Adafruit_BNO055.h"
+#include "Bluetooth.h"
 #include "Camera.h"
 #include "Common.h"
 #include "Config.h"

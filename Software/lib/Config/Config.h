@@ -71,6 +71,7 @@
     #define ORBIT_DIST_MULTI 0.0125f // 0.0125f
     #define ORBIT_DIST_EXP 3.8f //4.5f
 
+    #define SWITCHING_STRENGTH 20.0f
     #define DEFEND_CAM_TARGET 70.0
     #define DEFEND_MAX_DIST 465.07
     #define LS_THRESH 275
@@ -181,13 +182,15 @@
 
 ////////////////////////////////// BLUETOOTH ///////////////////////////////////
 
-// Serial2 on Primary Ã¢â‚¬â€ Serial1 is inter-Teensy ball link, Serial5 is camera.
+// Serial2 on Primary Serial1 is inter-Teensy ball link, Serial5 is camera.
 #define BT_SERIAL Serial2
 #define BT_BAUD 115200
 #define BT_PACKET_SIZE 6
 #define BT_START_BYTE 255
 #define BT_FLAG_ROLE 0x01
-#define BT_CONNECTION_TIMEOUT_US 1000000UL
+#define BT_CONNECTION_TIMEOUT_US 1000000
+#define BT_SEND_TIMER_US 10000
+#define BT_ROLE_CONFLICT_TIMER_US 1000000
 
 
 /////////////////////////////// VOLTAGE DIVIDERS ///////////////////////////////
