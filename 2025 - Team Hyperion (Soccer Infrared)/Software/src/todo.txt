@@ -1,0 +1,22 @@
+POSSIBLE MISTAKE IN DEFENDER CODE --> CONSULT APARAJ
+ --> Robot may not go backward when it does not see the line, 
+     I assume this is a simple turnary?
+
+to do (outside of testing) -->
+ - N/a
+
+to do (relearning and refreshers) -->
+ - ensure the new orbit is nailed into brain and is able to be explained
+ - ensure that the defender vector method is also nailed into brain
+ - trial interview with nathan to ensure that we know our stuff
+ - possibly some rule quizzing with nathan/aparaj as well just to ensure that we also know the rules correctly.
+
+to do (testing) --> 
+ - ensure all sensors work BEFORE RUNNING --> communicate any damage to team
+ - ensure all calculations work well before moving on.
+    - new orbit (test this)
+    - ensure defender calcs still work appropriately
+    - 
+ - ensure that all components and aspects of the robot are functional on their own before testing everything all together.
+    e.g. make sure the attacking logic works, then the defending logic, then all else.
+ - tune centering values | if not done in time then remove it from the code and logic, simply just make it stay still instead.
