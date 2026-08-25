@@ -1,8 +1,8 @@
-# <img src="Documentation/readme-assets/schoolLogo.png" width="40" height="40" /> TEAM HYPERION 
+# <img src="2026 - Team Hyperion (Soccer Infrared + Soccer Vision)\Documentation\readme-assets\schoolLogo.png" width="40" height="40" /> TEAM HYPERION 
 ### Brisbane Boys' College · RoboCup Junior Soccer Squad
 
 <p align="center">
-  <img src="Documentation/readme-assets/teamphoto.jpg" alt="Team Hyperion Banner" width="100%">
+  <img src="2026 - Team Hyperion (Soccer Infrared + Soccer Vision)\Documentation\readme-assets\teamphoto.jpg" alt="Team Hyperion Banner" width="100%">
   <br>
   <b>Green. White. Black. Representing Australia.</b>
 </p>
