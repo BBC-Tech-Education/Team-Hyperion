@@ -199,4 +199,8 @@
 #define ROBOT_VOLTAGE_OFFSET 0.215224
 #define ROBOT_REQUIRED_VOLT 11.2
 
+/////////////////////////////// FIELD DIMENSIONS ///////////////////////////////
+#define FIELD_LENGTH_MM 2400
+
+
 #endif

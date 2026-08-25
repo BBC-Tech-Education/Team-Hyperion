@@ -63,6 +63,7 @@ float batLvl = 0.0f;
 Vect attackGoal;
 Vect defendGoal;
 Vect ballData;
+Vect fieldPosition;
 
 
 /////////////////////////////////// FUNCTIONS /////////////////////////////////
@@ -307,6 +308,7 @@ void loop() {
             attackGoal = cam.get_attack();
             defendGoal = cam.get_defend();
             ballData = cam.get_ball();
+            fieldPosition = cam.get_position();
             relBallDir = ballData.arg;
             relBallStr = ballData.mag;
             

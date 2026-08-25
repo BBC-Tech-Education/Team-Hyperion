@@ -13,6 +13,7 @@ public:
     Vect get_ball() { return ball; };
     Vect get_attack() { return attack; };
     Vect get_defend() { return defend; };
+    Vect get_position() { return position; };
 
 private:
     Vect ball{0.0f, 0.0f, false};
@@ -20,12 +21,14 @@ private:
     Vect blue{0.0f, 0.0f, false};
     Vect attack{0.0f, 0.0f, false};
     Vect defend{0.0f, 0.0f, false};
+    Vect position{0.0f, 0.0f, false};
 
     Timer ballNotVis{100000};
     Timer blueGoalNotVis{3000000};
     Timer yellowGoalNotVis{3000000};
 
     void read();
+    void calculate_position();
     void to_bearing(Vect& v);
     float px_to_mm(float mag);
 };

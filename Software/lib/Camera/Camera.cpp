@@ -60,6 +60,10 @@ void Camera::update() {
             }
         }
     }
+
+    // pixels to mm must happen here
+    calculate_position();
+
     if (ballNotVis.time_has_passed_no_update()) {
         ball.setStandard(0, 0);
     }
@@ -68,6 +72,15 @@ void Camera::update() {
     }
     if(blueGoalNotVis.time_has_passed_no_update()) {
         blue.setStandard(0, 0);
+    }
+}
+
+void Camera::calculate_position() {
+    if(attack.exists() && defend.exists()) {
+        Vect position = ((attack + defend) * -1.0) / 2.0;
+    } else {
+        Vect centerOffset(((attack.exists ? -1.0 : 1.0) * FIELD_LENGTH_MM) / 2.0, false);
+        Vect position = centerOffset - attack;
     }
 }
 
