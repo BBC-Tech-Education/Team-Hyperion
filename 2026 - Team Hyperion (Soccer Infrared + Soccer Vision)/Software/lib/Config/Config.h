@@ -2,11 +2,11 @@
 #define CONFIG_H
 
 /////////////////////////////////// ROBOT ID ///////////////////////////////////
-#define CONTROL 1 // control = 1, chaos = 0
-#define GOAL_TRACKING 1
-#define ORBIT 1 // enables or disables Orbit
+#define CONTROL 0 // control = 1, chaos = 0
+#define GOAL_TRACKING 0
+#define ORBIT 0 // enables or disables Orbit
 #define SURGE 0 // enables or disables Surging
-#define LOCALISATION (1 && GOAL_TRACKING)
+#define LOCALISATION (0 && GOAL_TRACKING)
 #define CAM_BLUE_GOAL 0
 #define USE_COM_MODULE 0 // 1 = COM_MODULE pin, 0 = ENABLE_SWITCH
 
@@ -105,6 +105,7 @@
     #define ORBIT_DIST_MULTI 12.41625f
     #define ORBIT_DIST_EXP -14.56002f
 
+    #define SWITCHING_STRENGTH 20.0f
     #define DEFEND_CAM_TARGET 300.0
     #define DEFEND_MAX_DIST 465.07
     #define LS_THRESH 275

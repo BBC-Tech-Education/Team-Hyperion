@@ -214,7 +214,7 @@ void LightSystem::update() {
         lineDir = float_mod(450.0f - lineDir, 360.0f);
     }
 
-    lineVector.setPolar(lineSize,lineDir);
+    lineVector.setPolar(abs(lineSize),lineDir);
 
     #if DEBUG_LS_RAW
     Serial.printf("LS_RAW_VECT: dir=%.2f\tsize=%.2f\n", lineDir, lineSize);
@@ -230,5 +230,5 @@ float LightSystem::get_line_angle() {
 }
 
 float LightSystem::get_line_size() {
-    return lineVector.mag;
+    return lineSize;
 }
