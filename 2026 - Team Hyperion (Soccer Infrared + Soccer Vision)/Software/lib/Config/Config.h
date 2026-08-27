@@ -6,7 +6,7 @@
 #define GOAL_TRACKING 1
 #define ORBIT 1 // enables or disables Orbit
 #define SURGE 0 // enables or disables Surging
-#define LOCALISATION 1
+#define LOCALISATION (1 && GOAL_TRACKING)
 #define CAM_BLUE_GOAL 0
 #define USE_COM_MODULE 0 // 1 = COM_MODULE pin, 0 = ENABLE_SWITCH
 

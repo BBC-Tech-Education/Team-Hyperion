@@ -29,7 +29,6 @@ private:
 
     void read();
     void calculate_position();
-    void to_bearing(Vect& v);
     float px_to_mm(float mag);
 };
 

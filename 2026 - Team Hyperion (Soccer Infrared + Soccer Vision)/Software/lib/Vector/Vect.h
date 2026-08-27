@@ -10,6 +10,8 @@ class Vect {
 		Vect(float val1, float val2, bool isPolar = true);
 		void setStandard(float _i, float _j);
 		void setPolar(float _mag, float _arg);
+
+		Vect to_bearing() const;
 		
 		Vect operator+(Vect vector2);
 		Vect operator-(Vect vector2);

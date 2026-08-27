@@ -119,10 +119,6 @@ void calculate_attack() {
 
     float absBallDir = float_mod(relBallDir + bearing, 360.0f);
 
-    Serial.print(relBallDir);
-    Serial.print("\t");
-    Serial.println(relBallStr);
-
     if (relBallStr != 0.0f) {
         float orbitTarget = target;
         if (attackGoal.exists() && GOAL_TRACKING) {
@@ -156,9 +152,14 @@ void calculate_attack() {
 
     } else {
         #if LOCALISATION
-        float angle = normaliseAngle180(bearing);
-        moveDir = (angle < 0.0f)?270.0f:90.0f;
-        moveSpd = fabs(localise.update(angle, 0.0f));
+        // float angle = normaliseAngle180(bearing);
+        // moveDir = (angle < 0.0f)?270.0f:90.0f;
+        // moveSpd = fabs(localise.update(angle, 0.0f));
+        Vect targetVector(0.0f, 0.0f, false);
+        Vect moveVector = move_to(targetVector);
+        moveVector = moveVector.to_bearing();
+        moveDir = moveVector.arg;
+        moveSpd = fabs(localise.update(moveVector.mag, 0.0f));
         #else
         moveDir = 0.0f;
         moveSpd = 0.0f;
@@ -257,6 +258,10 @@ void update_battery_led() {
     } else {
         digitalWrite(BATTERY_LED, LOW);
     }
+}
+
+Vect move_to(Vect targetPosition) {
+    return targetPosition - fieldPosition;
 }
 
 

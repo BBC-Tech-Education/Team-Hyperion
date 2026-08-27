@@ -17,7 +17,7 @@ void Camera::read() {
     int16_t b2 = CAM_SERIAL.read() - CAM_PIXEL_SHIFT;
     if (b1 != (CAM_CENTER_X - CAM_PIXEL_SHIFT) && b2 != (CAM_CENTER_Y - CAM_PIXEL_SHIFT)) {
         blue.setStandard(b1, b2);
-        to_bearing(blue);
+        blue = blue.to_bearing();
         blueGoalNotVis.update();
     }
     
@@ -25,7 +25,7 @@ void Camera::read() {
     b2 = CAM_SERIAL.read() - CAM_PIXEL_SHIFT;
     if (b1 != (CAM_CENTER_X - CAM_PIXEL_SHIFT) && b2 != (CAM_CENTER_Y - CAM_PIXEL_SHIFT)) {
         yellow.setStandard(b1, b2);
-        to_bearing(yellow);
+        yellow = yellow.to_bearing();
         yellowGoalNotVis.update();
     }
 
@@ -33,7 +33,7 @@ void Camera::read() {
     b2 = CAM_SERIAL.read() - CAM_PIXEL_SHIFT;
     if (b1 != (CAM_CENTER_X - CAM_PIXEL_SHIFT) && b2 != (CAM_CENTER_Y - CAM_PIXEL_SHIFT)) {
         ball.setStandard(b1, b2);
-        to_bearing(ball);
+        ball = ball.to_bearing();
         ballNotVis.update();
     }
 
@@ -77,19 +77,13 @@ void Camera::update() {
 
 void Camera::calculate_position() {
     if(attack.exists() && defend.exists()) {
-        Vect position = ((attack + defend) * -1.0) / 2.0;
+        position = ((attack + defend) * -1.0) / 2.0;
     } else {
-        Vect centerOffset(((attack.exists ? -1.0 : 1.0) * FIELD_LENGTH_MM) / 2.0, false);
-        Vect position = centerOffset - attack;
+        Vect centerOffset(((attack.exists() ? -1.0 : 1.0) * FIELD_LENGTH_MM) / 2.0, false);
+        position = centerOffset - attack;
     }
 }
 
 float Camera::px_to_mm(float mag) {
     return 0.0000913503f * powf(mag, 3.51908) + 221.38261;
-}
-
-void Camera::to_bearing(Vect& v) {
-    if (v.exists()) {
-        v.arg = float_mod(270.0f - v.arg, 360.0f);
-    }
 }

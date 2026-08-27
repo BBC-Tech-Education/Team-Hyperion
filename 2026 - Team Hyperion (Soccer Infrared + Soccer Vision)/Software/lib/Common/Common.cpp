@@ -107,13 +107,3 @@ bool angleIsInside(float angleBoundCounterClockwise, float angleBoundClockwise, 
 		return(angleBoundCounterClockwise < angleCheck || angleCheck < angleBoundClockwise);
 	}
 }
-
-uint8_t compute_bt_role_score(uint8_t ballStr, bool facingBall, bool facingGoal,
-                           uint8_t goalDist, uint8_t batLvl) {
-    uint16_t score = (ballStr * 2) / 5;
-    if (facingBall) score += 20;
-    if (facingGoal) score += 15;
-    score += (goalDist * 3) / 20;
-    score += ((uint16_t)batLvl * 10) / 126;
-    return (uint8_t)(score > 255 ? 255 : score);
-}

@@ -107,3 +107,11 @@ float Vect::calcMag(float _i, float _j){
 float Vect::calcArg(float _i, float _j){
 	return float_mod(RAD_TO_DEG * atan2f(_j, _i), 360.0);
 }
+
+Vect Vect::to_bearing() const {
+    if (mag != 0) {
+        float bearing_arg = float_mod(270.0f - arg, 360.0f);
+        return Vect(mag, bearing_arg, true);
+    }
+    return *this;
+}
