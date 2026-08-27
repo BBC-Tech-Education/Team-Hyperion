@@ -71,8 +71,8 @@ Vect fieldPosition;
 /// @brief  Performs calculations with the light sensor library to achieve a
 ///         line angle that is relative to the field rather than the robot.
 void update_absolute_line() {
-    relLineAngle = ls.get_line_vector().arg();
-    relLineSize = ls.get_line_vector().mag();
+    relLineAngle = ls.get_line_vector().arg;
+    relLineSize = ls.get_line_vector().mag;
     bool noLine = (relLineAngle == -1.0f);
     
     float lineDirection = noLine ? -1.0f : float_mod(relLineAngle + bearing, 360.0f);

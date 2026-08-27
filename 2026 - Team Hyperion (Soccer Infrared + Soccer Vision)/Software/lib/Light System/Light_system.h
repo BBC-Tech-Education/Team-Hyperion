@@ -11,7 +11,9 @@ public:
     void init();
     void update();
 
-    Vect get_line_vector() {return lineVector.setPolar(lineSize,lineDir);};
+    Vect get_line_vector() {return lineVector;};
+    float get_line_angle();
+    float get_line_size();
 
 private:
     void read();
