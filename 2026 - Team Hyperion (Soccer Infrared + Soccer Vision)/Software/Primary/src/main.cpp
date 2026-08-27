@@ -111,6 +111,10 @@ void update_absolute_line() {
     }
 }
 
+Vect move_to(Vect targetPosition) {
+    return targetPosition - fieldPosition;
+}
+
 /// @brief  Performs calculations for our attacker strategy, and runs the motors.
 void calculate_attack() {
     float moveDir = 0.0f;
@@ -258,10 +262,6 @@ void update_battery_led() {
     } else {
         digitalWrite(BATTERY_LED, LOW);
     }
-}
-
-Vect move_to(Vect targetPosition) {
-    return targetPosition - fieldPosition;
 }
 
 
