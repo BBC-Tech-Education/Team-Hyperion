@@ -253,6 +253,9 @@ void calculate_defend() {
 /// @brief  Updates our battery LED to show if our battery is low during a game.
 void update_battery_led() {
     batLvl = battery.get_lvl();
+    Serial.print(analogRead(ROBOT_VD_PIN));
+    Serial.print("\t");
+    Serial.println(batLvl);
 
     if (batLvl > ROBOT_REQUIRED_VOLT) {
         batteryTimer.update();

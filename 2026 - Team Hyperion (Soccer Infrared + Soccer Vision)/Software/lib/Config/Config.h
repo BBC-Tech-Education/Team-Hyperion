@@ -136,7 +136,7 @@
 #define LAV_PID_MAX 150.0f
 #define LOC_PID_MAX 80.0f
 
-#define BATTERY_TIMER_INTERVAL 5000000
+#define BATTERY_TIMER_INTERVAL 1000000
 
 #define BALL_DIR_DIVISOR 100.0f
 
@@ -195,8 +195,8 @@
 
 /////////////////////////////// VOLTAGE DIVIDERS ///////////////////////////////
 
-#define ROBOT_VOLTAGE_STABALISER 73.41388
-#define ROBOT_VOLTAGE_OFFSET 0.215224
+#define ROBOT_VOLTAGE_STABALISER 71.58083
+#define ROBOT_VOLTAGE_OFFSET 0.0146378
 #define ROBOT_REQUIRED_VOLT 11.2
 
 /////////////////////////////// FIELD DIMENSIONS ///////////////////////////////
