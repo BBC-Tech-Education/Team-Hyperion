@@ -4,20 +4,23 @@
 #include <Arduino.h>
 #include "Timer.h"
 #include "Config.h"
+#include "Vect.h"
 
 struct CommunicationData {
     bool role = false; // sent & read
     bool enabled = false; // sent & read
     bool attackCone = false; // sent & read
     uint8_t ballStr = 0; // sent & read
+    Vect pos{0.0f, 0.0f, false};
 };
 
 class Bluetooth {
 public:
     void init();
-    void update(bool enabled, float ballDir, float ballStr);
+    void update(bool enabled, float ballDir, float ballStr, Vect pos);
 
     bool get_role() { return self.role; };
+    Vect get_other_pos() { return other.pos; };
 private:
     void read();
     void send();

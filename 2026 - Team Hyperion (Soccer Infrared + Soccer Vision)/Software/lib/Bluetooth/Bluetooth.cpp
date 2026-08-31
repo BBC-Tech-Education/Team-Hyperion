@@ -5,10 +5,12 @@ void Bluetooth::init() {
     connectedTimer.update();
 }
 
-void Bluetooth::update(bool enabled, float ballDir, float ballStr) {
+void Bluetooth::update(bool enabled, float ballDir, float ballStr, Vect pos) {
     self.enabled = enabled;
     self.ballStr = (ballStr > 255.0f) ? 255 : (uint8_t)ballStr;
     self.attackCone = (ballDir > BALL_FRONT_MAX || ballDir < BALL_FRONT_MIN);
+    self.pos.i = (int16_t)pos.i;
+    self.pos.j = (int16_t)pos.j;
     if(sendTimer.time_has_passed()) {
         send();
     }
@@ -30,6 +32,17 @@ void Bluetooth::read() {
             other.attackCone = (info >> 2)&0x01;
             otherPreviousRole = other.role;
             other.role = info&0x03;
+
+            uint8_t highByte = BT_SERIAL.read();
+            uint8_t lowByte = BT_SERIAL.read();
+            uint16_t byte = (static_cast<uint16_t>(highByte) << 8) | lowByte;
+            other.pos.i = static_cast<int16_t>(byte);
+
+            highByte = BT_SERIAL.read();
+            lowByte = BT_SERIAL.read();
+            byte = (static_cast<uint16_t>(highByte) << 8) | lowByte;
+            other.pos.j = static_cast<int16_t>(byte);
+
             switching = (otherPreviousRole != other.role) && (self.role == other.role);
             connectedTimer.update();
         }
@@ -67,4 +80,15 @@ void Bluetooth::send() {
     BT_SERIAL.write(self.ballStr);
     uint8_t info = ((self.enabled & 0x01) << 3) | ((self.attackCone & 0x01) << 2) | (self.role & 0x03);
     BT_SERIAL.write(info);
+    int16_t posI = static_cast<int16_t>(self.pos.i);
+    uint8_t highByte = (posI >> 8) & 0xFF;
+    uint8_t lowByte = posI & 0xFF;
+    BT_SERIAL.write(highByte);
+    BT_SERIAL.write(lowByte);
+
+    int16_t posJ = static_cast<int16_t>(self.pos.j);
+    highByte = (posJ >> 8) & 0xFF;
+    lowByte = posJ & 0xFF;
+    BT_SERIAL.write(highByte);
+    BT_SERIAL.write(lowByte);
 }

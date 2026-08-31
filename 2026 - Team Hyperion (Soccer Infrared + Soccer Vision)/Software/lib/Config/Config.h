@@ -186,7 +186,7 @@
 // Serial2 on Primary Serial1 is inter-Teensy ball link, Serial5 is camera.
 #define BT_SERIAL Serial2
 #define BT_BAUD 115200
-#define BT_PACKET_SIZE 6
+#define BT_PACKET_SIZE 10
 #define BT_START_BYTE 255
 #define BT_FLAG_ROLE 0x01
 #define BT_CONNECTION_TIMEOUT_US 1000000UL
