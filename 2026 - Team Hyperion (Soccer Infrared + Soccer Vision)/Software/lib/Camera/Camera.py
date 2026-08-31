@@ -10,13 +10,16 @@ robot = True # control true, chaos false
 draw = False
 
 if robot:
+    CENTER_POINT = Point2D(  widSize // 2 + 17,  widSize // 2 - 50)
     CENTER_X = widSize // 2 + 17
     CENTER_Y = widSize // 2 - 50
     MAX_RADIUS = 200
     MIN_RADIUS = 47
+    INNER_C_POINT = CENTER_POINT + Point2D(-3,0)
     INNER_CX = CENTER_X - 3
     INNER_CY = CENTER_Y - 0
 else:
+    centerPoint = Point2D(  widSize // 2 + 18,  widSize // 2 - 55)
     CENTER_X = widSize // 2 + 18
     CENTER_Y = widSize // 2 - 55
     MAX_RADIUS = 177
@@ -64,13 +67,16 @@ clock = time.clock()
 
 
 def in_valid_zone(blob):
-    dx = blob.cx() - INNER_CX
-    dy = blob.cy() - INNER_CY
-    if dx * dx + dy * dy <= MIN_RADIUS_SQ:
+    # dx = blob.cx() - INNER_CX
+    # dy = blob.cy() - INNER_CY
+    dP = Point2D(   blob.cx() - INNER_C_POINT.x,   blob.cy() - INNER_C_POINT.y)
+    ### dx * dx + dy * dy
+    if dP**2 <= MIN_RADIUS_SQ:
         return False
-    dx = blob.cx() - CENTER_X
-    dy = blob.cy() - CENTER_Y
-    return dx * dx + dy * dy < MAX_RADIUS_SQ
+    # dx = blob.cx() - CENTER_X
+    # dy = blob.cy() - CENTER_Y
+    dP = Point2D(   blob.cx() - INNER_C_POINT.x,   blob.cy() - INNER_C_POINT.y)
+    return dP**2 < MAX_RADIUS_SQ
 
 
 def to_mirror(cx, cy):

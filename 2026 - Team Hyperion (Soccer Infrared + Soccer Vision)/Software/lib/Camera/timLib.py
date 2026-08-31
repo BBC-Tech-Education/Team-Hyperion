@@ -71,6 +71,9 @@ class Point2D:
         if(type(other) == type(self)): return Point2D(self.x / other.x, self.y / other.y)
         else: return Point2D(self.x / other, self.y / other)
         pass
+    def __pow__(self, other):
+        return (self.x**other + self.y**other)
+        pass
     def distance_to_point(self, *other):
         '''Returns the distance to another point2D.
         
