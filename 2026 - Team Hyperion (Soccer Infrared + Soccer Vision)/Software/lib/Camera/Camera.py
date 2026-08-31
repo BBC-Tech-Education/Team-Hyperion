@@ -2,6 +2,8 @@
 import sensor
 import time
 from pyb import UART
+from timLib import Point2D, Vector2D
+
 
 widSize = 480
 robot = True # control true, chaos false
