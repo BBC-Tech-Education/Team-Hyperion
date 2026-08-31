@@ -13,6 +13,7 @@ public:
 
     Vect get_line_vector() {return lineVector;};
     float get_line_angle();
+    float get_line_mag();
     float get_line_size();
 
 private:
@@ -39,9 +40,9 @@ private:
     uint8_t clusterNum;
     bool inCluster;
 
-    float lineDir;
-    float lineSize;
-    Vect lineVector;
+    float lineDir; ///< The direction of the line relitive to the center of the robot in degrees.
+    float lineSize; ///< The line size from -1 to 1 for line states.
+    Vect lineVector; ///< The vector of the line relitive to the center of the robot.
 };
 
 #endif
