@@ -80,6 +80,7 @@ void Bluetooth::send() {
     BT_SERIAL.write(self.ballStr);
     uint8_t info = ((self.enabled & 0x01) << 3) | ((self.attackCone & 0x01) << 2) | (self.role & 0x03);
     BT_SERIAL.write(info);
+    
     int16_t posI = static_cast<int16_t>(self.pos.i);
     uint8_t highByte = (posI >> 8) & 0xFF;
     uint8_t lowByte = posI & 0xFF;
