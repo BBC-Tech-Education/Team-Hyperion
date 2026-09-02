@@ -22,6 +22,7 @@ Adafruit_BNO055 bno(BNO055_SENSOR_ID, BNO055_ADDRESS_B, &Wire);
 Camera cam;
 DriveSystem motors;
 LightSystem ls;
+Bluetooth bt;
 
 // PIDs
 PID correction(KP_IMU, 0.0, KD_IMU, IMU_PID_MAX);
@@ -64,6 +65,7 @@ Vect attackGoal;
 Vect defendGoal;
 Vect ballData;
 Vect fieldPosition;
+Vect otherFieldPosition;
 
 
 /////////////////////////////////// FUNCTIONS /////////////////////////////////
@@ -317,6 +319,7 @@ void loop() {
             defendGoal = cam.get_defend();
             ballData = cam.get_ball();
             fieldPosition = cam.get_position();
+            otherFieldPosition = bt.get_other_pos();
             relBallDir = ballData.arg;
             relBallStr = ballData.mag;
             
