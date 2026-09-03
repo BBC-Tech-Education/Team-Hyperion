@@ -1,0 +1,23 @@
+# PlatformIO
+.pio/
+.pioenvs/
+.piolibdeps/
+.clang_complete
+.gcc-flags.json
+CMakeLists.txt
+cmake-build-*/
+
+# VS Code (PlatformIO regenerates these with absolute paths)
+.vscode/
+!.vscode/extensions.json
+
+# Teensy / build outputs if anyone builds outside .pio
+*.hex
+*.elf
+*.bin
+*.map
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
