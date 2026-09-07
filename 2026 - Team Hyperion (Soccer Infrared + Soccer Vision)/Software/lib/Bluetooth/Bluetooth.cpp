@@ -5,10 +5,10 @@ void Bluetooth::init() {
     connectedTimer.update();
 }
 
-void Bluetooth::update(bool enabled, float ballDir, float ballStr, Vect pos) {
+void Bluetooth::update(bool enabled, Vect ball, Vect pos) {
     self.enabled = enabled;
-    self.ballStr = (ballStr > 255.0f) ? 255 : (uint8_t)ballStr;
-    self.attackCone = (ballDir > BALL_FRONT_MAX || ballDir < BALL_FRONT_MIN);
+    self.ball.i = (int16_t)ball.i;
+    self.ball.j = (int16_t)ball.j;
     self.pos.i = (int16_t)pos.i;
     self.pos.j = (int16_t)pos.j;
     if(sendTimer.time_has_passed()) {
@@ -26,22 +26,15 @@ void Bluetooth::read() {
         uint8_t b2 = BT_SERIAL.peek();
         if(b1 == BT_START_BYTE && b2 == BT_START_BYTE) {
             BT_SERIAL.read();
-            other.ballStr = BT_SERIAL.read();
             uint8_t info = BT_SERIAL.read();
-            other.enabled = (info >> 3)&0x01;
-            other.attackCone = (info >> 2)&0x01;
+            other.enabled = (info >> 1)&0x01;
             otherPreviousRole = other.role;
-            other.role = info&0x03;
+            other.role = info&0x01;
 
-            uint8_t highByte = BT_SERIAL.read();
-            uint8_t lowByte = BT_SERIAL.read();
-            uint16_t byte = (static_cast<uint16_t>(highByte) << 8) | lowByte;
-            other.pos.i = static_cast<int16_t>(byte);
-
-            highByte = BT_SERIAL.read();
-            lowByte = BT_SERIAL.read();
-            byte = (static_cast<uint16_t>(highByte) << 8) | lowByte;
-            other.pos.j = static_cast<int16_t>(byte);
+            other.ball.i = receive_vector_comp();
+            other.ball.j = receive_vector_comp();
+            other.pos.i = receive_vector_comp();
+            other.pos.j = receive_vector_comp();
 
             switching = (otherPreviousRole != other.role) && (self.role == other.role);
             connectedTimer.update();
@@ -50,46 +43,56 @@ void Bluetooth::read() {
 }
 
 void Bluetooth::calculate_role() {
-    if (self.ballStr == 0) {
-        switching = false;
-        return;
-    }
+    // if (self.ballStr == 0) {
+    //     switching = false;
+    //     return;
+    // }
 
-    if(!self.enabled) {
-        self.role = true;
-        roleConflict.update();
-    } else if(!connected || !other.enabled) {
-        self.role = false;
-        roleConflict.update();
-    } else if(switching) {
-        self.role = !self.role;
-        roleConflict.update();
-    } else if(self.role == other.role) {
-        if(roleConflict.time_has_passed_no_update()) {
-            self.role = self.ballStr < other.ballStr;
-            roleConflict.update();
-        }
-    } else if(!self.role && self.attackCone && (self.ballStr < SWITCHING_STRENGTH)) {
-        switching = true;
-    }
+    // if(!self.enabled) {
+    //     self.role = true;
+    //     roleConflict.update();
+    // } else if(!connected || !other.enabled) {
+    //     self.role = false;
+    //     roleConflict.update();
+    // } else if(switching) {
+    //     self.role = !self.role;
+    //     roleConflict.update();
+    // } else if(self.role == other.role) {
+    //     if(roleConflict.time_has_passed_no_update()) {
+    //         self.role = self.ballStr < other.ballStr;
+    //         roleConflict.update();
+    //     }
+    // } else if(!self.role && self.attackCone && (self.ballStr < SWITCHING_STRENGTH)) {
+    //     switching = true;
+    // }
 }
 
 void Bluetooth::send() {
     BT_SERIAL.write(BT_START_BYTE);
     BT_SERIAL.write(BT_START_BYTE);
-    BT_SERIAL.write(self.ballStr);
-    uint8_t info = ((self.enabled & 0x01) << 3) | ((self.attackCone & 0x01) << 2) | (self.role & 0x03);
+    uint8_t info = ((self.enabled & 0x01) << 1) | (self.role & 0x01);
     BT_SERIAL.write(info);
-    
-    int16_t posI = static_cast<int16_t>(self.pos.i);
-    uint8_t highByte = (posI >> 8) & 0xFF;
-    uint8_t lowByte = posI & 0xFF;
+    send_vector(self.ball);
+    send_vector(self.pos);
+}
+
+int16_t Bluetooth::receive_vector_comp() {
+    uint8_t highByte = BT_SERIAL.read();
+    uint8_t lowByte = BT_SERIAL.read();
+    uint16_t byte = (static_cast<uint16_t>(highByte) << 8) | lowByte;
+    return static_cast<int16_t>(byte);
+}
+
+void Bluetooth::send_vector(Vect v) {
+    int16_t iComp = static_cast<int16_t>(v.i);
+    uint8_t highByte = (iComp >> 8) & 0xFF;
+    uint8_t lowByte = iComp & 0xFF;
     BT_SERIAL.write(highByte);
     BT_SERIAL.write(lowByte);
 
-    int16_t posJ = static_cast<int16_t>(self.pos.j);
-    highByte = (posJ >> 8) & 0xFF;
-    lowByte = posJ & 0xFF;
+    int16_t jComp = static_cast<int16_t>(v.j);
+    highByte = (jComp >> 8) & 0xFF;
+    lowByte = jComp & 0xFF;
     BT_SERIAL.write(highByte);
     BT_SERIAL.write(lowByte);
 }
