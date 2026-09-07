@@ -2,27 +2,22 @@
 import sensor
 import time
 from pyb import UART
-from timLib import Point2D, Vector2D
-
 
 widSize = 480
-robot = True # control true, chaos false
-draw = False
+robot = False # control true, chaos false
+draw = True
 
 if robot:
-    CENTER_POINT = Point2D(  widSize // 2 + 17,  widSize // 2 - 50)
     CENTER_X = widSize // 2 + 17
     CENTER_Y = widSize // 2 - 50
     MAX_RADIUS = 200
     MIN_RADIUS = 47
-    INNER_C_POINT = CENTER_POINT + Point2D(-3,0)
     INNER_CX = CENTER_X - 3
     INNER_CY = CENTER_Y - 0
 else:
-    centerPoint = Point2D(  widSize // 2 + 18,  widSize // 2 - 55)
-    CENTER_X = widSize // 2 + 18
+    CENTER_X = widSize // 2 + 18# 18
     CENTER_Y = widSize // 2 - 55
-    MAX_RADIUS = 177
+    MAX_RADIUS = 360
     MIN_RADIUS = 40
     INNER_CX = CENTER_X - 3
     INNER_CY = CENTER_Y - 5
@@ -32,7 +27,7 @@ ORIGIN = widSize // 2
 
 sensor.reset()
 sensor.set_pixformat(sensor.RGB565)
-sensor.set_framesize(sensor.VGA)
+sensor.set_framesize(sensor.VGA  )
 sensor.set_windowing((widSize, widSize))
 sensor.skip_frames(time=2000)
 sensor.set_auto_gain(False, gain_db=22.0)
@@ -46,7 +41,7 @@ if robot:
     ball_threshold = [(48, 100, 41, 127, -5, 127)]
 else:
     goal_thresholds = [(34, 58, -128, -1, -128, 6), (39, 50, -2, 127, 16, 127)]
-    ball_threshold = [(39, 100, 29, 127, 33, 127)]
+    ball_threshold = [(0, 100, 13, 127, 28, 127)]#[(39, 100, 29, 127, 33, 127)]
 
 ROI_SIZE_BALL = 75
 ROI_SIZE_GOAL = 120
@@ -67,16 +62,13 @@ clock = time.clock()
 
 
 def in_valid_zone(blob):
-    # dx = blob.cx() - INNER_CX
-    # dy = blob.cy() - INNER_CY
-    dP = Point2D(   blob.cx() - INNER_C_POINT.x,   blob.cy() - INNER_C_POINT.y)
-    ### dx * dx + dy * dy
-    if dP**2 <= MIN_RADIUS_SQ:
+    dx = blob.cx() - INNER_CX
+    dy = blob.cy() - INNER_CY
+    if dx * dx + dy * dy <= MIN_RADIUS_SQ:
         return False
-    # dx = blob.cx() - CENTER_X
-    # dy = blob.cy() - CENTER_Y
-    dP = Point2D(   blob.cx() - INNER_C_POINT.x,   blob.cy() - INNER_C_POINT.y)
-    return dP**2 < MAX_RADIUS_SQ
+    dx = blob.cx() - CENTER_X
+    dy = blob.cy() - CENTER_Y
+    return dx * dx + dy * dy < MAX_RADIUS_SQ
 
 
 def to_mirror(cx, cy):
@@ -136,9 +128,11 @@ while True:
         img.draw_rectangle(ball_roi, color=(0, 255, 0))
 
     blob = None
-    for b in img.find_blobs(ball_threshold, roi=ball_roi, x_stride=1, y_stride=1,
-                            area_threshold=9, pixel_threshold=9, merge=True, margin=5):
+    for b in img.find_blobs(ball_threshold,roi = ball_roi, x_stride=1, y_stride=1,
+                            area_threshold=0, pixel_threshold=0, merge=True, margin=1):
+        # print("found a blob!")
         if in_valid_zone(b) and (blob is None or b.area() > blob.area()):
+            # print("found a blob in zone!")
             blob = b
 
     if blob:
@@ -150,7 +144,7 @@ while True:
             img.draw_line(CENTER_X, CENTER_Y, blob.cx(), blob.cy(), color=(255, 165, 0), thickness=2)
     else:
         lost_ball_count += 1
-
+    # print(lost_ball_count)
     if draw:
         img.draw_circle(CENTER_X, CENTER_Y, MAX_RADIUS, color=(255, 255, 255), thickness=2)
         img.draw_circle(INNER_CX, INNER_CY, MIN_RADIUS, color=(255, 0, 0), thickness=2)
