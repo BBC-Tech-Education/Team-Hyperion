@@ -171,6 +171,7 @@ void calculate_attack() {
         moveSpd = 0.0f;
         #endif
     }
+    #if LIGHT_SENSORS
     if (absLineSize != -1.0f) {
         
         if (relBallStr == 0.0f) {
@@ -194,6 +195,7 @@ void calculate_attack() {
         }
 
     }
+    #endif
 
     if (attackGoal.exists() && GOAL_TRACKING) {
         float goalAngle = normaliseAngle180(float_mod(attackGoal.arg, 360.0f));
@@ -255,9 +257,6 @@ void calculate_defend() {
 /// @brief  Updates our battery LED to show if our battery is low during a game.
 void update_battery_led() {
     batLvl = battery.get_lvl();
-    Serial.print(analogRead(ROBOT_VD_PIN));
-    Serial.print("\t");
-    Serial.println(batLvl);
 
     if (batLvl > ROBOT_REQUIRED_VOLT) {
         batteryTimer.update();
@@ -313,6 +312,7 @@ void loop() {
         case STATE_GAME: {
             bno.getEvent(&event); 
             bearing = float_mod(event.orientation.x - target, 360.0f);
+            Serial.println(bearing);
 
             cam.update();
             attackGoal = cam.get_attack();

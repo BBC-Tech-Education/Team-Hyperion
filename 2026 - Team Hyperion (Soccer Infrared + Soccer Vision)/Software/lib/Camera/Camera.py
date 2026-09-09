@@ -15,9 +15,9 @@ if robot:
     INNER_CX = CENTER_X - 3
     INNER_CY = CENTER_Y - 0
 else:
-    CENTER_X = widSize // 2 + 18# 18
-    CENTER_Y = widSize // 2 - 55
-    MAX_RADIUS = 360
+    CENTER_X = widSize // 2 + 8# 18
+    CENTER_Y = widSize // 2 - 30
+    MAX_RADIUS = 205
     MIN_RADIUS = 40
     INNER_CX = CENTER_X - 3
     INNER_CY = CENTER_Y - 5
