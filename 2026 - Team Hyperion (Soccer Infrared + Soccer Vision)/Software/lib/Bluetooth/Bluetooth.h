@@ -22,6 +22,7 @@ public:
 
     bool get_role() { return self.role; };
     Vect get_other_pos() { return other.pos; };
+    Vect get_other_ball() { return other.ball; };
 private:
     void read();
     void send();

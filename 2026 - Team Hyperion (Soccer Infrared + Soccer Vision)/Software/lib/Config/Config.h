@@ -3,9 +3,9 @@
 
 /////////////////////////////////// ROBOT ID ///////////////////////////////////
 #define CONTROL 0 // control = 1, chaos = 0
-#define GOAL_TRACKING 0
-#define ORBIT 0 // enables or disables Orbit
-#define SURGE 0 // enables or disables Surging
+#define GOAL_TRACKING 1
+#define ORBIT 1 // enables or disables Orbit
+#define SURGE 1 // enables or disables Surging
 #define LIGHT_SENSORS 0
 #define LOCALISATION (0 && GOAL_TRACKING)
 #define CAM_BLUE_GOAL 0

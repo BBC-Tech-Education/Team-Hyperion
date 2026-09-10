@@ -66,6 +66,7 @@ Vect defendGoal;
 Vect ballData;
 Vect fieldPosition;
 Vect otherFieldPosition;
+Vect otherBallData;
 
 
 /////////////////////////////////// FUNCTIONS /////////////////////////////////
@@ -115,6 +116,22 @@ void update_absolute_line() {
 
 Vect move_to(Vect targetPosition) {
     return targetPosition - fieldPosition;
+}
+
+void update_field_position() {
+    otherFieldPosition = bt.get_other_pos();
+    otherBallData = bt.get_other_ball();
+    if(attackGoal.exists() && defendGoal.exists()) {
+        fieldPosition = ((attackGoal + defendGoal) * -1.0) / 2.0;
+    } else if(attackGoal.exists() || defendGoal.exists()) {
+        Vect centerOffset(((attackGoal.exists() ? -1.0 : 1.0) * FIELD_LENGTH_MM) / 2.0, false);
+        fieldPosition = centerOffset - attackGoal;
+    } else if(ballData.exists() && otherBallData.exists()) {
+        fieldPosition = ballData - otherBallData + otherFieldPosition;
+        // use the ball data that you have and the ball data that the other robot has to compute where the ball is relative to the robot.
+    } else {
+        fieldPosition = Vect(0.0f, 0.0f, false);
+    }
 }
 
 /// @brief  Performs calculations for our attacker strategy, and runs the motors.
@@ -318,13 +335,14 @@ void loop() {
             attackGoal = cam.get_attack();
             defendGoal = cam.get_defend();
             ballData = cam.get_ball();
-            fieldPosition = cam.get_position();
-            otherFieldPosition = bt.get_other_pos();
+            update_field_position();
             relBallDir = ballData.arg;
             relBallStr = ballData.mag;
             
             ls.update();
             update_absolute_line();
+
+            bt.update(motorsOn, (1.0f, 1.0f, false), (2.0f, 2.0f, false));
 
             bool attack = !CONTROL;
 
