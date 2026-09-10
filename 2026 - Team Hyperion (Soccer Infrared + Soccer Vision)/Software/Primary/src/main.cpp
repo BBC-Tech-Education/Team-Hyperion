@@ -342,7 +342,7 @@ void loop() {
             ls.update();
             update_absolute_line();
 
-            bt.update(motorsOn, (1.0f, 1.0f, false), (2.0f, 2.0f, false));
+            bt.update(motorsOn, Vect(1.0f, 1.0f, false), Vect(2.0f, 2.0f, false));
 
             bool attack = !CONTROL;
 
