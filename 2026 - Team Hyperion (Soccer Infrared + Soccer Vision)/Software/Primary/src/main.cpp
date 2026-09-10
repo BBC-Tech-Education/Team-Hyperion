@@ -304,6 +304,7 @@ void setup() {
     motors.init();
     ls.init();
 
+    bt.init();
     battery.init();
     
     pinMode(ENABLE_SWITCH, INPUT);
@@ -329,7 +330,6 @@ void loop() {
         case STATE_GAME: {
             bno.getEvent(&event); 
             bearing = float_mod(event.orientation.x - target, 360.0f);
-            Serial.println(bearing);
 
             cam.update();
             attackGoal = cam.get_attack();

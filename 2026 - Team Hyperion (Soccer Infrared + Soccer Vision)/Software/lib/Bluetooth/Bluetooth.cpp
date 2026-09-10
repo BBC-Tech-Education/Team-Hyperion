@@ -15,16 +15,22 @@ void Bluetooth::update(bool enabled, Vect ball, Vect pos) {
         send();
     }
     read();
+    // Serial.println(other.pos.i);
 
     connected = !connectedTimer.time_has_passed_no_update();
     calculate_role();
 }
 
 void Bluetooth::read() {
+    // Serial.println(BT_SERIAL.available());
     if(BT_SERIAL.available() >= BT_PACKET_SIZE) {
         uint8_t b1 = BT_SERIAL.read();
         uint8_t b2 = BT_SERIAL.peek();
+        // Serial.print(b1);
+        // Serial.print("\t");
+        // Serial.println(b2);
         if(b1 == BT_START_BYTE && b2 == BT_START_BYTE) {
+            // Serial.println("hey sigma");
             BT_SERIAL.read();
             uint8_t info = BT_SERIAL.read();
             other.enabled = (info >> 1)&0x01;
