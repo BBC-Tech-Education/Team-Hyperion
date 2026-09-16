@@ -3,9 +3,9 @@
 
 /////////////////////////////////// ROBOT ID ///////////////////////////////////
 #define CONTROL 0 // control = 1, chaos = 0
-#define GOAL_TRACKING 1
-#define ORBIT 1 // enables or disables Orbit
-#define SURGE 1 // enables or disables Surging
+#define GOAL_TRACKING 0
+#define ORBIT 0 // enables or disables Orbit
+#define SURGE 0 // enables or disables Surging
 #define LIGHT_SENSORS 0
 #define LOCALISATION (0 && GOAL_TRACKING)
 #define CAM_BLUE_GOAL 0
@@ -80,9 +80,6 @@
     #define KD_IMU 0.04 // 0.04
     #define KP_GOALT 1.0
     #define KD_GOALT 0.02
-    #define KP_GOALT_AGGR 1.25
-    #define KD_GOALT_AGGR 0.04
-    #define KP_HOZT 1.8
     #define KP_CVERT 13.0
     #define KP_LOC 0.15
     #define KD_LOC 0.0
@@ -108,17 +105,14 @@
     #define ORBIT_DIST_EXP -14.56002f
 
     #define SWITCHING_STRENGTH 20.0f
-    #define DEFEND_CAM_TARGET 82.0f
-    #define DEFEND_MAX_DIST 87.0f
+    #define DEFEND_CAM_TARGET 70.0
+    #define DEFEND_MAX_DIST 465.07
     #define LS_THRESH 275
     #define KP_IMU 1.25
     #define KD_IMU 0.04 // 0.04
     #define KP_GOALT 0.8
     #define KD_GOALT 0.04
-    #define KP_GOALT_AGGR 1.25
-    #define KD_GOALT_AGGR 0.04
-    #define KP_HOZT 1.5
-    #define KP_CVERT 10.0
+    #define KP_CVERT 100.0
     #define KP_LOC 3.0f
     #define KD_LOC 0.0
     #define KP_LAV 100.0
@@ -187,7 +181,7 @@
 ////////////////////////////////// BLUETOOTH ///////////////////////////////////
 
 // Serial2 on Primary Serial1 is inter-Teensy ball link, Serial5 is camera.
-#define BT_SERIAL Serial8
+#define BT_SERIAL Serial2
 #define BT_BAUD 115200
 #define BT_PACKET_SIZE 11
 #define BT_START_BYTE 255

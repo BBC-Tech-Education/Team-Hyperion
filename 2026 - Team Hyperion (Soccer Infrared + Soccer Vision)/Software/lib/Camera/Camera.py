@@ -15,8 +15,8 @@ if robot:
     INNER_CX = CENTER_X - 3
     INNER_CY = CENTER_Y - 0
 else:
-    CENTER_X = widSize // 2 + 8# 18
-    CENTER_Y = widSize // 2 - 30
+    CENTER_X = widSize // 2 + 13# 18
+    CENTER_Y = widSize // 2 - 37
     MAX_RADIUS = 205
     MIN_RADIUS = 40
     INNER_CX = CENTER_X - 3
@@ -40,8 +40,8 @@ if robot:
     goal_thresholds = [(35, 75, -128, -2, -128, -3), (0, 56, -128, 127, 29, 127)]
     ball_threshold = [(48, 100, 41, 127, -5, 127)]
 else:
-    goal_thresholds = [(0, 48, -128, 13, -128, -16), (0, 52, -6, 15, 16, 127)]
-    ball_threshold = [(0, 100, 42, 127, 28, 127)]#[(39, 100, 29, 127, 33, 127)]
+    goal_thresholds = [(0, 51, -128, 19, -128, -19), (39, 52, -3, 35, 14, 34)]
+    ball_threshold = [(59, 100, 36, 127, 20, 127)]#[(39, 100, 29, 127, 33, 127)]
 
 ROI_SIZE_BALL = 75
 ROI_SIZE_GOAL = 120

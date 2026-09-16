@@ -26,9 +26,9 @@ void Bluetooth::read() {
     if(BT_SERIAL.available() >= BT_PACKET_SIZE) {
         uint8_t b1 = BT_SERIAL.read();
         uint8_t b2 = BT_SERIAL.peek();
-        // Serial.print(b1);
-        // Serial.print("\t");
-        // Serial.println(b2);
+        Serial.print(b1);
+        Serial.print("\t");
+        Serial.println(b2);
         if(b1 == BT_START_BYTE && b2 == BT_START_BYTE) {
             // Serial.println("hey sigma");
             BT_SERIAL.read();

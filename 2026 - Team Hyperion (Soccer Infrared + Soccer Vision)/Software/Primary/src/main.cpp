@@ -27,8 +27,8 @@ Bluetooth bt;
 // PIDs
 PID correction(KP_IMU, 0.0, KD_IMU, IMU_PID_MAX);
 PID goalTrack(KP_GOALT, 0.0, KD_GOALT, GOALT_PID_MAX);
+PID goalTrackAggressive(KP_GOALT_AGGR, 0.0, KD_GOALT_AGGR, GOALT_PID_MAX);
 PID horizontal(KP_HOZT, 0.0, 0.0);
-PID vertical(KP_VERT, 0.0, 0.0);
 PID vertCam(KP_CVERT, 0.0, 0.0);
 PID lineAvoid(KP_LAV, 0.0, KD_LAV, LAV_PID_MAX);
 PID localise(KP_LOC, 0.0, KD_LOC, LOC_PID_MAX);
@@ -238,6 +238,7 @@ void calculate_defend() {
     } else {
         vert = -70.0f;
     }
+    Serial.println(vert);
 
     float moveSpd = sqrtf(hozt*hozt + vert*vert);
     float moveDir = (atan2f(hozt, vert) * RAD_TO_DEG);
@@ -247,14 +248,16 @@ void calculate_defend() {
     }
     
     float moveCor = 0.0f;
+    #if LIGHT_SENSORS
     if(absLineSize != -1.0f) {
         moveDir = float_mod(absLineAngle + 180.0f, 360.0f);
         moveSpd = -lineAvoid.update(absLineSize, -1.0f);
     }
+    #endif
  
     if(defendGoal.exists()) {
         float goalAngle = float_mod(defendGoal.arg + 180.0f, 360.0f);
-        moveCor = goalTrack.update(normaliseAngle180(goalAngle), 0.0f);
+        moveCor = goalTrackAggressive.update(normaliseAngle180(goalAngle), 0.0f);
     } else {
         moveCor = -correction.update(normaliseAngle180(bearing), 0.0);
     }
@@ -288,23 +291,17 @@ void update_battery_led() {
 
 void setup() {
     state = STATE_IDLE;
-    Serial.begin(SERIAL_BAUD_RATE);
 
     while (!bno.begin(OPERATION_MODE_IMUPLUS)) {
         Serial.println("No BNO055 detected.");
         delay(1000);
     }
-    delay(500);
-    bno.setExtCrystalUse(true);
-    delay(500);
-
-    Serial1.begin(TSSP_BAUD_RATE);
 
     cam.init();
     motors.init();
     ls.init();
 
-    bt.init();
+    // bt.init();
     battery.init();
     
     pinMode(ENABLE_SWITCH, INPUT);
@@ -342,9 +339,10 @@ void loop() {
             ls.update();
             update_absolute_line();
 
-            bt.update(motorsOn, Vect(1.0f, 1.0f, false), Vect(2.0f, 2.0f, false));
+            // bt.update(motorsOn, Vect(1.0f, 1.0f, false), Vect(2.0f, 2.0f, false));
 
-            bool attack = !CONTROL;
+            // bool attack = !CONTROL;
+            bool attack = false;
 
             if (motorsOn) {
                 if (attack) {
