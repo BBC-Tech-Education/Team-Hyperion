@@ -78,10 +78,10 @@
     #define LS_THRESH 275
     #define KP_IMU 1.25
     #define KD_IMU 0.04 // 0.04
-    #define KP_GOALT 1.0
-    #define KD_GOALT 0.02
-    #define KP_GOALT_AGGR 1.25
-    #define KD_GOALT_AGGR 0.04
+    #define KP_GOALT_ATK 1.0
+    #define KD_GOALT_ATK 0.02
+    #define KP_GOALT_DEF 1.25
+    #define KD_GOALT_DEF 0.04
     #define KP_HOZT 1.8
     #define KP_CVERT 13.0
     #define KP_LOC 0.15
@@ -113,10 +113,10 @@
     #define LS_THRESH 275
     #define KP_IMU 1.25
     #define KD_IMU 0.04 // 0.04
-    #define KP_GOALT 0.8
-    #define KD_GOALT 0.04
-    #define KP_GOALT_AGGR 1.25
-    #define KD_GOALT_AGGR 0.04
+    #define KP_GOALT_ATK 0.8
+    #define KD_GOALT_ATK 0.04
+    #define KP_GOALT_DEF 1.25
+    #define KD_GOALT_DEF 0.04
     #define KP_HOZT 1.5
     #define KP_CVERT 10.0
     #define KP_LOC 3.0f

@@ -26,8 +26,8 @@ Bluetooth bt;
 
 // PIDs
 PID correction(KP_IMU, 0.0, KD_IMU, IMU_PID_MAX);
-PID goalTrack(KP_GOALT, 0.0, KD_GOALT, GOALT_PID_MAX);
-PID goalTrackAggressive(KP_GOALT_AGGR, 0.0, KD_GOALT_AGGR, GOALT_PID_MAX);
+PID goalTrackAttack(KP_GOALT_ATK, 0.0, KD_GOALT_ATK, GOALT_PID_MAX);
+PID goalTrackDefend(KP_GOALT_DEF, 0.0, KD_GOALT_DEF, GOALT_PID_MAX);
 PID horizontal(KP_HOZT, 0.0, 0.0);
 PID vertCam(KP_CVERT, 0.0, 0.0);
 PID lineAvoid(KP_LAV, 0.0, KD_LAV, LAV_PID_MAX);
@@ -216,7 +216,7 @@ void calculate_attack() {
 
     if (attackGoal.exists() && GOAL_TRACKING) {
         float goalAngle = normaliseAngle180(float_mod(attackGoal.arg, 360.0f));
-        moveCor = goalTrack.update(goalAngle, 0.0f);
+        moveCor = goalTrackAttack.update(goalAngle, 0.0f);
     } else {
         moveCor = -correction.update(normaliseAngle180(bearing), 0.0f);
     }
@@ -257,7 +257,7 @@ void calculate_defend() {
  
     if(defendGoal.exists()) {
         float goalAngle = float_mod(defendGoal.arg + 180.0f, 360.0f);
-        moveCor = goalTrackAggressive.update(normaliseAngle180(goalAngle), 0.0f);
+        moveCor = goalTrackDefend.update(normaliseAngle180(goalAngle), 0.0f);
     } else {
         moveCor = -correction.update(normaliseAngle180(bearing), 0.0);
     }
