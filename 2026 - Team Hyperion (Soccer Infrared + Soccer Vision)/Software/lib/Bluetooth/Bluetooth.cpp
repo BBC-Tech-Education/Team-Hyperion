@@ -15,22 +15,16 @@ void Bluetooth::update(bool enabled, Vect ball, Vect pos) {
         send();
     }
     read();
-    // Serial.println(other.pos.i);
 
     connected = !connectedTimer.time_has_passed_no_update();
     calculate_role();
 }
 
 void Bluetooth::read() {
-    // Serial.println(BT_SERIAL.available());
     if(BT_SERIAL.available() >= BT_PACKET_SIZE) {
         uint8_t b1 = BT_SERIAL.read();
         uint8_t b2 = BT_SERIAL.peek();
-        Serial.print(b1);
-        Serial.print("\t");
-        Serial.println(b2);
         if(b1 == BT_START_BYTE && b2 == BT_START_BYTE) {
-            // Serial.println("hey sigma");
             BT_SERIAL.read();
             uint8_t info = BT_SERIAL.read();
             other.enabled = (info >> 1)&0x01;
@@ -49,28 +43,28 @@ void Bluetooth::read() {
 }
 
 void Bluetooth::calculate_role() {
-    // if (self.ballStr == 0) {
-    //     switching = false;
-    //     return;
-    // }
+    if (self.ball.mag == 0 && other.ball.mag == 0) {
+        switching = false;
+        return;
+    }
 
-    // if(!self.enabled) {
-    //     self.role = true;
-    //     roleConflict.update();
-    // } else if(!connected || !other.enabled) {
-    //     self.role = false;
-    //     roleConflict.update();
-    // } else if(switching) {
-    //     self.role = !self.role;
-    //     roleConflict.update();
-    // } else if(self.role == other.role) {
-    //     if(roleConflict.time_has_passed_no_update()) {
-    //         self.role = self.ballStr < other.ballStr;
-    //         roleConflict.update();
-    //     }
-    // } else if(!self.role && self.attackCone && (self.ballStr < SWITCHING_STRENGTH)) {
-    //     switching = true;
-    // }
+    if(!self.enabled) {
+        self.role = true;
+        roleConflict.update();
+    } else if(!connected || !other.enabled) {
+        self.role = false;
+        roleConflict.update();
+    } else if(switching) {
+        self.role = !self.role;
+        roleConflict.update();
+    } else if(self.role == other.role) {
+        if(roleConflict.time_has_passed_no_update()) {
+            self.role = self.ball.mag > other.ball.mag;
+            roleConflict.update();
+        }
+    } else if(!self.role && ((self.ball.arg < 15.0f || self.ball.arg > 345.0f) && (self.ball.mag < SWITCHING_STRENGTH))) {
+        switching = true;
+    }
 }
 
 void Bluetooth::send() {
@@ -85,18 +79,18 @@ void Bluetooth::send() {
 int16_t Bluetooth::receive_vector_comp() {
     uint8_t highByte = BT_SERIAL.read();
     uint8_t lowByte = BT_SERIAL.read();
-    uint16_t byte = (static_cast<uint16_t>(highByte) << 8) | lowByte;
-    return static_cast<int16_t>(byte);
+    uint16_t combined = ((uint16_t)highByte << 8) | lowByte;
+    return combined;
 }
 
 void Bluetooth::send_vector(Vect v) {
-    int16_t iComp = static_cast<int16_t>(v.i);
+    int16_t iComp = v.i;
     uint8_t highByte = (iComp >> 8) & 0xFF;
     uint8_t lowByte = iComp & 0xFF;
     BT_SERIAL.write(highByte);
     BT_SERIAL.write(lowByte);
 
-    int16_t jComp = static_cast<int16_t>(v.j);
+    int16_t jComp = v.j;
     highByte = (jComp >> 8) & 0xFF;
     lowByte = jComp & 0xFF;
     BT_SERIAL.write(highByte);

@@ -13,6 +13,7 @@
 ///////////////////////////////////// FSMs ////////////////////////////////////
 enum RobotState {
     STATE_IDLE,
+    STATE_CALIBRATE,
     STATE_GAME
 };
 
@@ -60,6 +61,8 @@ float absLineAngle = -1.0f;
 float absLineSize = -1.0f;
 
 float batLvl = 0.0f;
+
+bool lastMotorsOn = false;
 
 Vect attackGoal;
 Vect defendGoal;
@@ -300,7 +303,7 @@ void setup() {
     motors.init();
     ls.init();
 
-    // bt.init();
+    bt.init();
     battery.init();
     
     pinMode(ENABLE_SWITCH, INPUT);
@@ -320,8 +323,17 @@ void loop() {
     switch (state) {
         case STATE_IDLE:
             motors.run(0.0f, 0.0f, 0.0f);
-            state = STATE_GAME;
+            if(motorsOn && !lastMotorsOn) {
+                // If the motor switch has just turned on, calibrate.
+                state = STATE_CALIBRATE;
+            } else {
+                state = STATE_GAME;
+            }
             break;
+
+        case STATE_CALIBRATE:
+            // calibrate stuff here
+            state = STATE_GAME;
 
         case STATE_GAME: {
             bno.getEvent(&event); 
@@ -338,9 +350,14 @@ void loop() {
             ls.update();
             update_absolute_line();
 
-            // bt.update(motorsOn, Vect(1.0f, 1.0f, false), Vect(2.0f, 2.0f, false));
+            // Serial.println(motorsOn);
+            bt.update(motorsOn, ballData, Vect(2.0f, 2.0f, false));
 
             // bool attack = !CONTROL;
+            Serial.print(bt.get_other_ball().i);
+            Serial.print("\t");
+            Serial.println(bt.get_role());
+            // Serial.println(ballData.arg);
             bool attack = true;
 
             if (motorsOn) {
@@ -377,4 +394,5 @@ void loop() {
             break;
         }
     };
+    lastMotorsOn = motorsOn;
 }

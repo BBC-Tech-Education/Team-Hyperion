@@ -3,12 +3,14 @@
 
 #include "Pins.h"
 #include "Config.h"
+#include "Vect.h"
 
 
 class LightSystem {
 public:
     void init();
     void update();
+
 
     float get_line_angle();
     float get_line_size();

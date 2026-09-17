@@ -186,12 +186,10 @@
 
 ////////////////////////////////// BLUETOOTH ///////////////////////////////////
 
-// Serial2 on Primary Serial1 is inter-Teensy ball link, Serial5 is camera.
 #define BT_SERIAL Serial8
-#define BT_BAUD 115200
+#define BT_BAUD 38400
 #define BT_PACKET_SIZE 11
 #define BT_START_BYTE 255
-#define BT_FLAG_ROLE 0x01
 #define BT_CONNECTION_TIMEOUT_US 1000000UL
 #define BT_SEND_TIMER_US 20000
 #define BT_ROLE_CONFLICT_TIMER_US 1000000UL

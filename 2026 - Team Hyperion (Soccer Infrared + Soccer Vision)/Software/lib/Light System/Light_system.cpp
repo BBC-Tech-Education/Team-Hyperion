@@ -96,7 +96,7 @@ void LightSystem::update() {
 
     clusterNum = 0;
     inCluster = false;
-    LightSystem::Cluster clusterArray[4];
+    LightSystem::Cluster clusterArray[4]; 
     lineDir = -1.0f;
     lineSize = -1.0f;
 
