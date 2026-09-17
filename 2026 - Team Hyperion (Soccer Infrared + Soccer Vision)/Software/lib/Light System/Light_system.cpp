@@ -214,8 +214,6 @@ void LightSystem::update() {
         lineDir = float_mod(450.0f - lineDir, 360.0f);
     }
 
-    lineVector.setPolar(lineSize*99.0f,lineDir);
-
     #if DEBUG_LS_RAW
     Serial.printf("LS_RAW_VECT: dir=%.2f\tsize=%.2f\n", lineDir, lineSize);
     #endif
@@ -225,17 +223,10 @@ void LightSystem::update() {
     #endif
 }
 
-// /*@brief Returns the angle of the line relitive to the robot, in degrees*/
-// float LightSystem::get_line_angle() {
-//     return lineVector.arg;
-// }
+float LightSystem::get_line_angle() {
+    return lineDir;
+}
 
-// /*@brief Returns the distance the line is from the robots center in mm.*/
-// float LightSystem::get_line_mag() {
-//     return lineVector.mag;
-// }
-
-// /*@brief Returns the line size for line states.*/
-// float LightSystem::get_line_size() {
-//     return lineSize;
-// }
+float LightSystem::get_line_size() {
+    return lineSize;
+}

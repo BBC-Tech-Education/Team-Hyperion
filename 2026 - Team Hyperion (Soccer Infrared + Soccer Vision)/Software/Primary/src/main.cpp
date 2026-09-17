@@ -74,8 +74,8 @@ Vect otherBallData;
 /// @brief  Performs calculations with the light sensor library to achieve a
 ///         line angle that is relative to the field rather than the robot.
 void update_absolute_line() {
-    relLineAngle = ls.get_line_vector().arg;
-    relLineSize = ls.get_line_vector().mag;
+    relLineAngle = ls.get_line_angle();
+    relLineSize = ls.get_line_size();
     bool noLine = (relLineAngle == -1.0f);
     
     float lineDirection = noLine ? -1.0f : float_mod(relLineAngle + bearing, 360.0f);
@@ -238,7 +238,6 @@ void calculate_defend() {
     } else {
         vert = -70.0f;
     }
-    Serial.println(vert);
 
     float moveSpd = sqrtf(hozt*hozt + vert*vert);
     float moveDir = (atan2f(hozt, vert) * RAD_TO_DEG);
@@ -342,7 +341,7 @@ void loop() {
             // bt.update(motorsOn, Vect(1.0f, 1.0f, false), Vect(2.0f, 2.0f, false));
 
             // bool attack = !CONTROL;
-            bool attack = false;
+            bool attack = true;
 
             if (motorsOn) {
                 if (attack) {
