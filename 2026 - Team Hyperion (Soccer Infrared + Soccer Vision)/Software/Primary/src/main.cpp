@@ -162,6 +162,12 @@ void line_avoid(float &mDir, float &mSpd) {
 }
 
 void orbit(float &mDir, float &mSpd) {
+    float absBallDir = float_mod(relBallDir + bearing, 360.0f);
+    float orbitTarget = 0.0f;
+    if (attackGoal.exists() && GOAL_TRACKING) {
+        orbitTarget = float_mod(bearing, 360.0f);
+    }
+    #if ORBIT
     float dir = normaliseAngle180(float_mod(absBallDir - orbitTarget, 360.0f));
     float ballAngDiff = (dir > 0.0f ? 1.0f : -1.0f) * fmin(90.0f, 0.000000309786f*pow(dir, 4) + 0.0000534514f*pow(dir, 3) + 0.0163822f*dir*dir - 0.00204537f*dir + 10.0f);
     float distMulti = 0.8f;
@@ -184,6 +190,7 @@ void orbit(float &mDir, float &mSpd) {
     #endif
 
     mSpd = BASE_SPEED + (SURGE_SPEED - BASE_SPEED) * (1.0f - fabs(angleAddition / 90.0f));
+    #endif
 }
 
 void run_attack() {
@@ -191,18 +198,8 @@ void run_attack() {
     float moveSpd = 0.0f;
     float moveCor = 0.0f;
 
-    float absBallDir = float_mod(relBallDir + bearing, 360.0f);
-
     if (relBallStr != 0.0f) {
-        float orbitTarget = 0.0f;
-        if (attackGoal.exists() && GOAL_TRACKING) {
-            orbitTarget = float_mod(bearing, 360.0f);
-        }
-        
-        #if ORBIT
-        orbit(moveDir, mSpd);
-        #endif
-
+        orbit(moveDir, moveSpd);
     } else {
         #if LOCALISATION
         Vect targetVector(0.0f, 0.0f, false);
@@ -342,7 +339,7 @@ void loop() {
             bearing = float_mod(event.orientation.x - target, 360.0f);
 
             cam.update();
-            attackGoal = cam.get_run_attack();
+            attackGoal = cam.get_attack();
             defendGoal = cam.get_defend();
             ballData = cam.get_ball();
             update_field_position();
@@ -351,6 +348,10 @@ void loop() {
             
             ls.update();
             update_absolute_line();
+
+            // Serial.print(bt.get_role());
+            // Serial.print("\t");
+            // Serial.println(bt.get_other_role());
 
             if (bt.get_role()) {
                 run_attack();
