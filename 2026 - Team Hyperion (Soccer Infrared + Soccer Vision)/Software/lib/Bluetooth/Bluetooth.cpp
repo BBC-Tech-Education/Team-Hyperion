@@ -56,10 +56,6 @@ bool Bluetooth::defender_can_steal(Vect defenderBall) {
 }
 
 void Bluetooth::calculate_role() {
-
-    Serial.print(self.ball.mag);
-    Serial.print("\t");
-    Serial.println(other.ball.mag);
     
     if (!self.enabled) {
         self.role = true; // Attacker
@@ -74,6 +70,7 @@ void Bluetooth::calculate_role() {
     if (CONTROL) {
         if (switchTimer.time_has_passed_no_update()) {
             Vect defenderBall = self.role ? other.ball : self.ball;
+            Serial.println(self.ball.mag);
             if (defender_can_steal(defenderBall)) {
                 self.role = !self.role;
                 switchTimer.update();
