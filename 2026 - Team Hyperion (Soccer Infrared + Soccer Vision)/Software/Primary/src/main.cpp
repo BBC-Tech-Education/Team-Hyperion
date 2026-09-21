@@ -268,12 +268,12 @@ void calculate_defend() {
     Serial.printf("Move Dir: %.2f\tMove Spd: %.2f\tMove Cor: %.2f\n", moveDir, moveSpd, moveCor);
     Serial.printf("Hozt: %.2f\tVert: %.2f\n", hozt, vert);
     #endif
-    // if(relBallDir > 90.0f && relBallDir < 270.0f) {
-    //     calculate_attack();
-    // } else {
-    //     motors.run(moveSpd, float_mod(moveDir - bearing, 360.0f), moveCor);
-    // }
-    motors.run(0.0f, 0.0f, 30.0f);
+    if(relBallDir > 90.0f && relBallDir < 270.0f) {
+        calculate_attack();
+    } else {
+        motors.run(moveSpd, float_mod(moveDir - bearing, 360.0f), moveCor);
+    }
+    // motors.run(0.0f, 0.0f, 30.0f);
    
 }
 
@@ -358,7 +358,7 @@ void loop() {
             Serial.print(bt.get_role());
             Serial.print("\t");
             Serial.println(bt.get_other_role());
-            bool attack = true;
+            bool attack = bt.get_role();
 
             if (motorsOn) {
                 if (attack) {

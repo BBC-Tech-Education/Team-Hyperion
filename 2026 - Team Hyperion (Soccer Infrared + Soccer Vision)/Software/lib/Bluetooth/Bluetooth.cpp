@@ -51,6 +51,11 @@ void Bluetooth::read() {
 }
 
 void Bluetooth::calculate_role() {
+
+    Serial.print(self.ball.mag);
+    Serial.print("\t");
+    Serial.println(other.ball.mag);
+    
     if (!self.enabled) {
         // if I am not enabled
         self.role = true; // Attacker
@@ -67,10 +72,6 @@ void Bluetooth::calculate_role() {
         self.role = false; // Defender
         return;
     }
-
-    Serial.print(self.ball.mag);
-    Serial.print("\t");
-    Serial.println(other.ball.mag);
 
 
     if (self.ball.mag < other.ball.mag) {
