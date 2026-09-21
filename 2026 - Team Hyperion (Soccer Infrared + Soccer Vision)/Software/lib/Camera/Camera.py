@@ -8,9 +8,9 @@ robot = False # control true, chaos false
 draw = True
 
 if robot:
-    CENTER_X = widSize // 2 + 17
-    CENTER_Y = widSize // 2 - 50
-    MAX_RADIUS = 200
+    CENTER_X = widSize // 2 + 5
+    CENTER_Y = widSize // 2 - 40
+    MAX_RADIUS = 180
     MIN_RADIUS = 47
     INNER_CX = CENTER_X - 3
     INNER_CY = CENTER_Y - 0
@@ -34,16 +34,16 @@ sensor.skip_frames(time=2000)
 sensor.set_auto_gain(False, gain_db=22.0)
 sensor.set_auto_whitebal(False, rgb_gain_db=(0.0, 0.0, 0.0))
 sensor.set_auto_exposure(False, exposure_us=8000)
-# sensor.set_auto_exposure(False, exposure_us=30000)
 
 uart = UART(3, 115200, timeout_char=100)
 
+# yellow, blue
 if robot:
-    goal_thresholds = [(35, 75, -128, -2, -128, -3), (0, 56, -128, 127, 29, 127)]
-    ball_threshold = [(48, 100, 41, 127, -5, 127)]
+    goal_thresholds = [(28, 44, -128, 127, -128, -18), (29, 100, -11, 22, 24, 127)]
+    ball_threshold = [(47, 100, 19, 127, 38, 127)]#[(42, 100, -128, 127, 36, 127)]
 else:
-    goal_thresholds = [(0, 51, -128, 19, -128, -19), (39, 52, -3, 35, 14, 34)]
-    ball_threshold = [(0, 100, 21, 127, 36, 127)] #[(39, 100, 29, 127, 33, 127)]
+    goal_thresholds = [(26, 35, -9, 10, -128, -13), (0, 55, 0, 10, 17, 53)]
+    ball_threshold = [(42, 100, 48, 127, 24, 127)]
 
 ROI_SIZE_BALL = 75
 ROI_SIZE_GOAL = 120
@@ -64,12 +64,12 @@ clock = time.clock()
 
 
 def in_valid_zone(blob):
-    dx = blob.cx - INNER_CX
-    dy = blob.cy - INNER_CY
+    dx = blob.cx() - INNER_CX
+    dy = blob.cy() - INNER_CY
     if dx * dx + dy * dy <= MIN_RADIUS_SQ:
         return False
-    dx = blob.cx - CENTER_X
-    dy = blob.cy - CENTER_Y
+    dx = blob.cx() - CENTER_X
+    dy = blob.cy() - CENTER_Y
     return dx * dx + dy * dy < MAX_RADIUS_SQ
 
 
@@ -97,30 +97,30 @@ while True:
 
     for blob in img.find_blobs([goal_thresholds[0]], roi=yellow_roi, x_stride=4, y_stride=4,
                                area_threshold=150, pixels_threshold=200, margin=23):
-        if in_valid_zone(blob) and (yellow is None or blob.area > yellow.area):
+        if in_valid_zone(blob) and (yellow is None or blob.area() > yellow.area()):
             yellow = blob
 
     for blob in img.find_blobs([goal_thresholds[1]], roi=blue_roi, x_stride=4, y_stride=4,
                                area_threshold=150, pixels_threshold=200, margin=23):
-        if in_valid_zone(blob) and (blue is None or blob.area > blue.area):
+        if in_valid_zone(blob) and (blue is None or blob.area() > blue.area()):
             blue = blob
 
     if yellow:
-        data[0][0], data[0][1] = to_mirror(yellow.cx, yellow.cy)
-        last_yellow_x, last_yellow_y = yellow.cx, yellow.cy
+        data[0][0], data[0][1] = to_mirror(yellow.cx(), yellow.cy())
+        last_yellow_x, last_yellow_y = yellow.cx(), yellow.cy()
         lost_yellow_count = 0
         if draw:
-            img.draw_rectangle(yellow.rect, color=(0, 0, 255))
+            img.draw_rectangle(yellow.rect(), color=(0, 0, 255))
     else:
         lost_yellow_count += 1
         data[0] = [ORIGIN, ORIGIN]
 
     if blue:
-        data[1][0], data[1][1] = to_mirror(blue.cx, blue.cy)
-        last_blue_x, last_blue_y = blue.cx, blue.cy
+        data[1][0], data[1][1] = to_mirror(blue.cx(), blue.cy())
+        last_blue_x, last_blue_y = blue.cx(), blue.cy()
         lost_blue_count = 0
         if draw:
-            img.draw_rectangle(blue.rect, color=(255, 255, 0))
+            img.draw_rectangle(blue.rect(), color=(255, 255, 0))
     else:
         lost_blue_count += 1
         data[1] = [ORIGIN, ORIGIN]
@@ -130,24 +130,24 @@ while True:
         img.draw_rectangle(ball_roi, color=(0, 255, 0))
 
     blob = None
-    for b in img.find_blobs(ball_threshold,roi = ball_roi, x_stride=1, y_stride=1,
+    for b in img.find_blobs(ball_threshold, roi=ball_roi, x_stride=1, y_stride=1,
                             area_threshold=0, pixels_threshold=0, merge=True, margin=1):
-        if in_valid_zone(b) and (blob is None or b.area > blob.area):
+        if in_valid_zone(b) and (blob is None or b.area() > blob.area()):
             blob = b
 
     if blob:
-        data[2][0], data[2][1] = to_mirror(blob.cx, blob.cy)
-        last_ball_x, last_ball_y = blob.cx, blob.cy
+        data[2][0], data[2][1] = to_mirror(blob.cx(), blob.cy())
+        last_ball_x, last_ball_y = blob.cx(), blob.cy()
         lost_ball_count = 0
         if draw:
-            img.draw_rectangle(blob.rect, color=(255, 165, 0))
-            img.draw_line((CENTER_X, CENTER_Y, blob.cx, blob.cy), color=(255, 165, 0), thickness=2)
+            img.draw_rectangle(blob.rect(), color=(255, 165, 0))
+            img.draw_line(CENTER_X, CENTER_Y, blob.cx(), blob.cy(), color=(255, 165, 0), thickness=2)
     else:
         lost_ball_count += 1
 
     if draw:
-        img.draw_circle((CENTER_X, CENTER_Y, MAX_RADIUS), color=(255, 255, 255), thickness=2)
-        img.draw_circle((INNER_CX, INNER_CY, MIN_RADIUS), color=(255, 0, 0), thickness=2)
+        img.draw_circle(CENTER_X, CENTER_Y, MAX_RADIUS, color=(255, 255, 255), thickness=2)
+        img.draw_circle(INNER_CX, INNER_CY, MIN_RADIUS, color=(255, 0, 0), thickness=2)
 
     packet = bytearray([255, 250])
     for x, y in data:
