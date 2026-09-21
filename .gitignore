@@ -21,3 +21,6 @@ cmake-build-*/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Git worktrees (isolated feature workspaces)
+worktrees/
