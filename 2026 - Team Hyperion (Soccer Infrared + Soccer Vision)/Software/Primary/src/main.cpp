@@ -273,6 +273,7 @@ void calculate_defend() {
     } else {
         motors.run(moveSpd, float_mod(moveDir - bearing, 360.0f), moveCor);
     }
+    // motors.run(0.0f, 0.0f, 30.0f);
    
 }
 
@@ -354,17 +355,10 @@ void loop() {
             bt.update(motorsOn, ballData, Vect(2.0f, 2.0f, false));
 
             // bool attack = !CONTROL;
-            Serial.print(ballData.i);
+            Serial.print(bt.get_role());
             Serial.print("\t");
-            Serial.print(bt.get_other_ball().i);
-            Serial.print("\t");
-            Serial.print(ballData.j);
-            Serial.print("\t");
-            Serial.print(bt.get_other_ball().j);
-            Serial.print("\t");
-            Serial.println(bt.get_other_ball().arg);
-            // Serial.println(ballData.arg);
-            bool attack = true;
+            Serial.println(bt.get_other_role());
+            bool attack = bt.get_role();
 
             if (motorsOn) {
                 if (attack) {

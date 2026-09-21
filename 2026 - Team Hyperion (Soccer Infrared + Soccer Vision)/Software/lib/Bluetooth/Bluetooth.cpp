@@ -7,11 +7,16 @@ void Bluetooth::init() {
 
 void Bluetooth::update(bool enabled, Vect ball, Vect pos) {
     self.enabled = enabled;
-    self.ball.i = (int16_t)ball.i;
-    self.ball.j = (int16_t)ball.j;
-    self.pos.i = (int16_t)pos.i;
-    self.pos.j = (int16_t)pos.j;
-    if(sendTimer.time_has_passed()) {
+
+    int16_t iComponent = ball.i;
+    int16_t jComponent = ball.j;
+    self.ball.setStandard(iComponent, jComponent);
+
+    iComponent = pos.i;
+    jComponent = pos.j;
+    self.pos.setStandard(iComponent, jComponent);
+
+    if (sendTimer.time_has_passed()) {
         send();
     }
     read();
@@ -21,15 +26,16 @@ void Bluetooth::update(bool enabled, Vect ball, Vect pos) {
 }
 
 void Bluetooth::read() {
-    if(BT_SERIAL.available() >= BT_PACKET_SIZE) {
+    if (BT_SERIAL.available() >= BT_PACKET_SIZE) {
         uint8_t b1 = BT_SERIAL.read();
         uint8_t b2 = BT_SERIAL.peek();
-        if(b1 == BT_START_BYTE && b2 == BT_START_BYTE) {
-            BT_SERIAL.read();
+        if (b1 == BT_START_BYTE && b2 == BT_START_BYTE) {
+            BT_SERIAL.read(); // Consume second start byte
+            
             uint8_t info = BT_SERIAL.read();
-            other.enabled = (info >> 1)&0x01;
+            other.enabled = (info >> 1) & 0x01;
             otherPreviousRole = other.role;
-            other.role = info&0x01;
+            other.role = info & 0x01;
 
             int16_t iComp = receive_vector_comp();
             int16_t jComp = receive_vector_comp();
@@ -39,34 +45,31 @@ void Bluetooth::read() {
             jComp = receive_vector_comp();
             other.pos.setStandard(iComp, jComp);
 
-            switching = (otherPreviousRole != other.role) && (self.role == other.role);
             connectedTimer.update();
         }
     }
 }
 
 void Bluetooth::calculate_role() {
-    if (self.ball.mag == 0 && other.ball.mag == 0) {
-        switching = false;
+    if (!self.enabled) {
+        self.role = true; // Attacker
         return;
     }
 
-    if(!self.enabled) {
-        self.role = true;
-        roleConflict.update();
-    } else if(!connected || !other.enabled) {
-        self.role = false;
-        roleConflict.update();
-    } else if(switching) {
-        self.role = !self.role;
-        roleConflict.update();
-    } else if(self.role == other.role) {
-        if(roleConflict.time_has_passed_no_update()) {
-            self.role = self.ball.mag > other.ball.mag;
-            roleConflict.update();
-        }
-    } else if(!self.role && ((self.ball.arg < 15.0f || self.ball.arg > 345.0f) && (self.ball.mag < SWITCHING_STRENGTH))) {
-        switching = true;
+    if (!other.enabled) {
+        self.role = false; // Defender
+        return;
+    }
+
+    if (!connected) {
+        self.role = false; // Defender
+        return;
+    }
+
+    if (self.ball.mag > other.ball.mag) {
+        self.role = true;  // Attacker
+    } else if (self.ball.mag < other.ball.mag) {
+        self.role = false; // Defender
     }
 }
 

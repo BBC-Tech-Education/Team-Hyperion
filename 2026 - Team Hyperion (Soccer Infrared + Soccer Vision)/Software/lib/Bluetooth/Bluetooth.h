@@ -23,11 +23,13 @@ public:
     bool get_role() { return self.role; };
     Vect get_other_pos() { return other.pos; };
     Vect get_other_ball() { return other.ball; };
+    bool get_other_role() { return other.role; };
 private:
     void read();
     void send();
     void send_vector(Vect v);
     void calculate_role();
+    bool isBallInFront(float arg, float minAngle, float maxAngle);
     int16_t receive_vector_comp();
 
     CommunicationData self;
