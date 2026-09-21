@@ -354,9 +354,15 @@ void loop() {
             bt.update(motorsOn, ballData, Vect(2.0f, 2.0f, false));
 
             // bool attack = !CONTROL;
+            Serial.print(ballData.i);
+            Serial.print("\t");
             Serial.print(bt.get_other_ball().i);
             Serial.print("\t");
-            Serial.println(bt.get_role());
+            Serial.print(ballData.j);
+            Serial.print("\t");
+            Serial.print(bt.get_other_ball().j);
+            Serial.print("\t");
+            Serial.println(bt.get_other_ball().arg);
             // Serial.println(ballData.arg);
             bool attack = true;
 

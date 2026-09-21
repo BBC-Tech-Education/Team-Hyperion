@@ -31,10 +31,13 @@ void Bluetooth::read() {
             otherPreviousRole = other.role;
             other.role = info&0x01;
 
-            other.ball.i = receive_vector_comp();
-            other.ball.j = receive_vector_comp();
-            other.pos.i = receive_vector_comp();
-            other.pos.j = receive_vector_comp();
+            int16_t iComp = receive_vector_comp();
+            int16_t jComp = receive_vector_comp();
+            other.ball.setStandard(iComp, jComp);
+
+            iComp = receive_vector_comp();
+            jComp = receive_vector_comp();
+            other.pos.setStandard(iComp, jComp);
 
             switching = (otherPreviousRole != other.role) && (self.role == other.role);
             connectedTimer.update();
