@@ -26,7 +26,7 @@ void Bluetooth::update(bool enabled, Vect ball, Vect pos) {
 }
 
 void Bluetooth::read() {
-    if (BT_SERIAL.available() >= BT_PACKET_SIZE) {
+    while (BT_SERIAL.available() >= BT_PACKET_SIZE) {
         uint8_t b1 = BT_SERIAL.read();
         uint8_t b2 = BT_SERIAL.peek();
         if (b1 == BT_START_BYTE && b2 == BT_START_BYTE) {
@@ -34,7 +34,6 @@ void Bluetooth::read() {
             
             uint8_t info = BT_SERIAL.read();
             other.enabled = (info >> 1) & 0x01;
-            otherPreviousRole = other.role;
             other.role = info & 0x01;
 
             int16_t iComp = receive_vector_comp();
@@ -50,6 +49,12 @@ void Bluetooth::read() {
     }
 }
 
+bool Bluetooth::defender_can_steal(Vect defenderBall) {
+    return defenderBall.exists()
+        && defenderBall.isBetween(BALL_FRONT_MAX, BALL_FRONT_MIN)
+        && defenderBall.mag < SWITCHING_STRENGTH;
+}
+
 void Bluetooth::calculate_role() {
 
     Serial.print(self.ball.mag);
@@ -57,28 +62,32 @@ void Bluetooth::calculate_role() {
     Serial.println(other.ball.mag);
     
     if (!self.enabled) {
-        // if I am not enabled
         self.role = true; // Attacker
         return;
     }
 
-    if (!other.enabled) {
-        // if the other is not enabled
+    if (!connected || !other.enabled) {
         self.role = false; // Defender
         return;
     }
 
-    if (!connected) {
-        self.role = false; // Defender
-        return;
-    }
-
-
-    if (self.ball.mag < other.ball.mag) {
-        self.role = true;  // Attacker
+    if (CONTROL) {
+        if (switchTimer.time_has_passed_no_update()) {
+            Vect defenderBall = self.role ? other.ball : self.ball;
+            if (defender_can_steal(defenderBall)) {
+                self.role = !self.role;
+                switchTimer.update();
+            }
+        }
     } else {
-        self.role = false; // Defender
+        self.role = !other.role;
     }
+
+    #if DEBUG_BT_ROLE
+        Serial.printf("self role:%d en:%d mag:%.1f | other role:%d en:%d mag:%.1f conn:%d\n",
+                      self.role, self.enabled, self.ball.mag,
+                      other.role, other.enabled, other.ball.mag, connected);
+    #endif
 }
 
 void Bluetooth::send() {
