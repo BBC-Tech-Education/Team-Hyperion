@@ -192,13 +192,24 @@
 #define BT_START_BYTE 255
 #define BT_CONNECTION_TIMEOUT_US 1000000UL
 #define BT_SEND_TIMER_US 20000
-#define BT_ROLE_CONFLICT_TIMER_US 1000000UL
+#define BT_SWITCH_TIMER_US 5000000UL // min time between defender-steal role swaps
 
 /////////////////////////////// VOLTAGE DIVIDERS ///////////////////////////////
 
 #define ROBOT_VOLTAGE_STABALISER 71.58083
 #define ROBOT_VOLTAGE_OFFSET 0.0146378
 #define ROBOT_REQUIRED_VOLT 11.2
+
+/////////////////////////////// BALL HANDLING /////////////////////////////////
+
+#define KICK_PULSE_US              10000UL    // pin LOW duration (us)
+#define KICK_RECHARGE_US           2000000UL  // +1 kick every this many us
+#define KICK_COOLDOWN_US           500000UL   // after pulse ends (us)
+#define MAX_KICKS                  5
+#define KICKER_REQUIRED_VOLT       12.5f
+#define KICKER_VOLTAGE_STABALISER  71.58083   // calibrate later
+#define KICKER_VOLTAGE_OFFSET      0.0146378  // calibrate later
+#define PHOTOGATE_THRESH           512        // ball held if analogRead > this
 
 /////////////////////////////// FIELD DIMENSIONS ///////////////////////////////
 #define FIELD_LENGTH_MM 2400
