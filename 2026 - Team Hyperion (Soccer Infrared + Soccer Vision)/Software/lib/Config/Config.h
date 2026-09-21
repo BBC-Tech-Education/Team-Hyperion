@@ -9,7 +9,6 @@
 #define LIGHT_SENSORS 1
 #define LOCALISATION (0 && GOAL_TRACKING)
 #define CAM_BLUE_GOAL 0
-#define USE_COM_MODULE 0 // 1 = COM_MODULE pin, 0 = ENABLE_SWITCH
 
 //////////////////////////////////// DEBUG ////////////////////////////////////
 

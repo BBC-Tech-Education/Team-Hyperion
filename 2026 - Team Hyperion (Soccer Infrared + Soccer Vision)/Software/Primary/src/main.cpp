@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "Adafruit_BNO055.h"
+#include "Ball_handling.h"
 #include "Bluetooth.h"
 #include "Camera.h"
 #include "Common.h"
@@ -20,6 +21,7 @@ enum RobotState {
 //////////////////////////////////// OBJECTS //////////////////////////////////
 // ROBOT SYSTEMS
 Adafruit_BNO055 bno(BNO055_SENSOR_ID, BNO055_ADDRESS_B, &Wire);
+BallHandling ballHandler;
 Camera cam;
 DriveSystem motors;
 LightSystem ls;
@@ -47,7 +49,7 @@ RobotState state;
 sensors_event_t event;
 
 // VARIABLES
-float target;
+float target = 0.0f;
 float bearing;
 
 float relBallDir = 0.0f;
@@ -74,8 +76,25 @@ Vect otherBallData;
 
 /////////////////////////////////// FUNCTIONS /////////////////////////////////
 
-/// @brief  Performs calculations with the light sensor library to achieve a
-///         line angle that is relative to the field rather than the robot.
+void update_field_position() {
+    otherFieldPosition = bt.get_other_pos();
+    otherBallData = bt.get_other_ball();
+    if(attackGoal.exists() && defendGoal.exists()) {
+        fieldPosition = ((attackGoal + defendGoal) * -1.0) / 2.0;
+    } else if(attackGoal.exists() || defendGoal.exists()) {
+        Vect centerOffset(((attackGoal.exists() ? -1.0 : 1.0) * FIELD_LENGTH_MM) / 2.0, false);
+        fieldPosition = centerOffset - attackGoal;
+    } else if(ballData.exists() && otherBallData.exists()) {
+        fieldPosition = ballData - otherBallData + otherFieldPosition;
+    } else {
+        fieldPosition = Vect(0.0f, 0.0f, false);
+    }
+}
+
+Vect move_to(Vect targetPosition) {
+    return targetPosition - fieldPosition;
+}
+
 void update_absolute_line() {
     relLineAngle = ls.get_line_angle();
     relLineSize = ls.get_line_size();
@@ -117,28 +136,57 @@ void update_absolute_line() {
     }
 }
 
-Vect move_to(Vect targetPosition) {
-    return targetPosition - fieldPosition;
-}
-
-void update_field_position() {
-    otherFieldPosition = bt.get_other_pos();
-    otherBallData = bt.get_other_ball();
-    if(attackGoal.exists() && defendGoal.exists()) {
-        fieldPosition = ((attackGoal + defendGoal) * -1.0) / 2.0;
-    } else if(attackGoal.exists() || defendGoal.exists()) {
-        Vect centerOffset(((attackGoal.exists() ? -1.0 : 1.0) * FIELD_LENGTH_MM) / 2.0, false);
-        fieldPosition = centerOffset - attackGoal;
-    } else if(ballData.exists() && otherBallData.exists()) {
-        fieldPosition = ballData - otherBallData + otherFieldPosition;
-        // use the ball data that you have and the ball data that the other robot has to compute where the ball is relative to the robot.
-    } else {
-        fieldPosition = Vect(0.0f, 0.0f, false);
+void line_avoid(float &mDir, float &mSpd) {
+    if (absLineSize != -1.0f) {
+        
+        if (relBallStr == 0.0f) {
+            mDir = float_mod(absLineAngle + 180.0f, 360.0f);
+            mSpd = -lineAvoid.update(absLineSize, -1.0f);
+        } 
+        
+        else if (absLineSize < LINE_AVOID_THRESH) {
+            if (smallestAngleBetween(mDir, absLineAngle) < 90.0f) {
+                mSpd = sin(smallestAngleBetween(mDir, absLineAngle) * DEG_TO_RAD) * LS_SLIDE_CONST;
+                float difference = normaliseAngle180(float_mod(mDir - absLineAngle, 360.0f));
+                if (mDir > 0.0f) {
+                    mDir = float_mod(absLineAngle + 90.0f, 360.0f);
+                } else {
+                    mDir = float_mod(absLineAngle - 90.0f, 360.0f);
+                }
+            }
+        } else {
+            mDir = float_mod(absLineAngle + 180.0f, 360.0f);
+            mSpd = -lineAvoid.update(absLineSize, -1.0f);
+        }
     }
 }
 
-/// @brief  Performs calculations for our attacker strategy, and runs the motors.
-void calculate_attack() {
+void orbit(float &mDir, float &mSpd) {
+    float dir = normaliseAngle180(float_mod(absBallDir - orbitTarget, 360.0f));
+    float ballAngDiff = (dir > 0.0f ? 1.0f : -1.0f) * fmin(90.0f, 0.000000309786f*pow(dir, 4) + 0.0000534514f*pow(dir, 3) + 0.0163822f*dir*dir - 0.00204537f*dir + 10.0f);
+    float distMulti = 0.8f;
+    float angleAddition = distMulti * ballAngDiff;
+
+    #if SURGE
+    surgeTimer--;
+    if (((absBallDir < BALL_FRONT_MIN || absBallDir > BALL_FRONT_MAX) && (relBallStr < BALL_STR_CLOSE_THRESH))) {
+        mDir = 0.0f;
+        surgeTimer = 100;
+        mSpd = SURGE_SPEED + 70.0f;
+    } else if (surgeTimer > 0) {
+        mDir = 0.0f;
+        mSpd = SURGE_SPEED + 70.0f;
+    } else {
+        mDir = float_mod(absBallDir + angleAddition, 360.0f);
+    }
+    #else
+    mDir = float_mod(absBallDir + angleAddition, 360.0f);
+    #endif
+
+    mSpd = BASE_SPEED + (SURGE_SPEED - BASE_SPEED) * (1.0f - fabs(angleAddition / 90.0f));
+}
+
+void run_attack() {
     float moveDir = 0.0f;
     float moveSpd = 0.0f;
     float moveCor = 0.0f;
@@ -146,41 +194,17 @@ void calculate_attack() {
     float absBallDir = float_mod(relBallDir + bearing, 360.0f);
 
     if (relBallStr != 0.0f) {
-        float orbitTarget = target;
+        float orbitTarget = 0.0f;
         if (attackGoal.exists() && GOAL_TRACKING) {
             orbitTarget = float_mod(bearing, 360.0f);
         }
         
-    #if ORBIT
-        float dir = normaliseAngle180(float_mod(absBallDir - orbitTarget, 360.0f));
-        float ballAngDiff = (dir > 0.0f ? 1.0f : -1.0f) * fmin(90.0f, 0.000000309786f*pow(dir, 4) + 0.0000534514f*pow(dir, 3) + 0.0163822f*dir*dir - 0.00204537f*dir + 10.0f);
-        float distMulti = 0.8f;
-        float angleAddition = distMulti * ballAngDiff;
-
-        #if SURGE
-        surgeTimer--;
-        if (((absBallDir < BALL_FRONT_MIN || absBallDir > BALL_FRONT_MAX) && (relBallStr < BALL_STR_CLOSE_THRESH))) {
-            moveDir = 0.0f;
-            surgeTimer = 100;
-            moveSpd = SURGE_SPEED + 70.0f;
-        } else if (surgeTimer > 0) {
-            moveDir = 0.0f;
-            moveSpd = SURGE_SPEED + 70.0f;
-        } else {
-            moveDir = float_mod(absBallDir + angleAddition, 360.0f);
-        }
-        #else
-        moveDir = float_mod(absBallDir + angleAddition, 360.0f);
+        #if ORBIT
+        orbit(moveDir, mSpd);
         #endif
-
-        moveSpd = BASE_SPEED + (SURGE_SPEED - BASE_SPEED) * (1.0f - fabs(angleAddition / 90.0f));
-    #endif
 
     } else {
         #if LOCALISATION
-        // float angle = normaliseAngle180(bearing);
-        // moveDir = (angle < 0.0f)?270.0f:90.0f;
-        // moveSpd = fabs(localise.update(angle, 0.0f));
         Vect targetVector(0.0f, 0.0f, false);
         Vect moveVector = move_to(targetVector);
         moveVector = moveVector.to_bearing();
@@ -191,31 +215,19 @@ void calculate_attack() {
         moveSpd = 0.0f;
         #endif
     }
-    #if LIGHT_SENSORS
-    if (absLineSize != -1.0f) {
-        
-        if (relBallStr == 0.0f) {
-            moveDir = float_mod(absLineAngle + 180.0f, 360.0f);
-            moveSpd = -lineAvoid.update(absLineSize, -1.0f);
-        } 
-        
-        else if (absLineSize < LINE_AVOID_THRESH) {
-            if (smallestAngleBetween(moveDir, absLineAngle) < 90.0f) {
-                moveSpd = sin(smallestAngleBetween(moveDir, absLineAngle) * DEG_TO_RAD) * LS_SLIDE_CONST;
-                float difference = normaliseAngle180(float_mod(moveDir - absLineAngle, 360.0f));
-                if (difference > 0.0f) {
-                    moveDir = float_mod(absLineAngle + 90.0f, 360.0f);
-                } else {
-                    moveDir = float_mod(absLineAngle - 90.0f, 360.0f);
-                }
-            }
-        } else {
-            moveDir = float_mod(absLineAngle + 180.0f, 360.0f);
-            moveSpd = -lineAvoid.update(absLineSize, -1.0f);
-        }
 
-    }
+    #if LIGHT_SENSORS
+    line_avoid(moveDir, moveSpd);
     #endif
+
+    if (onField) {
+        float facingError = (attackGoal.exists() && GOAL_TRACKING)
+            ? fabsf(normaliseAngle180(float_mod(attackGoal.arg, 360.0f)))
+            : fabsf(normaliseAngle180(bearing));
+        if (facingError <= 10.0f) {
+            ballHandler.kick();
+        }
+    }
 
     if (attackGoal.exists() && GOAL_TRACKING) {
         float goalAngle = normaliseAngle180(float_mod(attackGoal.arg, 360.0f));
@@ -227,57 +239,48 @@ void calculate_attack() {
     motors.run(moveSpd, float_mod(moveDir - bearing, 360.0f), moveCor);
 }
 
-/// @brief  Performs calculations for our defender strategy, and runs the motors.
-void calculate_defend() {
-    float hoztInput = (relBallStr != 0.0f) ? -normaliseAngle180(relBallDir) : normaliseAngle180(bearing);
-    float hozt = horizontal.update(hoztInput, 0.0f);
-    if(relBallStr == 0.0f) {
-        hozt = 0.0f;
-    }
+void run_defend() {
+    float moveDir = 0.0f;
+    float moveSpd = 0.0f;
+    float moveCor = 0.0f;
+    bool ballBehind = relBallDir > 90.0f && relBallDir < 270.0f;
+    float bearingCor = -correction.update(normaliseAngle180(bearing), 0.0);
 
-    float vert = 0.0f;
-    if (defendGoal.exists()) {
-        vert = vertCam.update(defendGoal.mag, DEFEND_CAM_TARGET);
+    if(ballBehind) {
+        orbit(moveDir, moveSpd);
+        moveCor = bearingCor;
     } else {
-        vert = -70.0f;
-    }
-
-    float moveSpd = sqrtf(hozt*hozt + vert*vert);
-    float moveDir = (atan2f(hozt, vert) * RAD_TO_DEG);
-    if((relBallDir < BALL_FRONT_MIN || relBallDir > BALL_FRONT_MAX) && (relBallStr < BALL_STR_CLOSE_THRESH && relBallStr != 0.0f)) {
-        moveDir = 0.0f;
-        moveSpd = SURGE_SPEED + 70.0f;
+        if(defendGoal.exists()) {
+            float goalAngle = float_mod(defendGoal.arg + 180.0f, 360.0f);
+            moveCor = goalTrackDefend.update(normaliseAngle180(goalAngle), 0.0f);
+            float vert = vertCam.update(defendGoal.mag, DEFEND_CAM_TARGET);
+            float hozt = 0.0f;
+            if(relBallStr != 0.0f) {
+                hozt = horizontal.update((relBallStr != 0.0f) ? -normaliseAngle180(relBallDir) : normaliseAngle180(bearing), 0.0f);
+            }
+            if((relBallDir < BALL_FRONT_MIN || relBallDir > BALL_FRONT_MAX) && (relBallStr < BALL_STR_CLOSE_THRESH && relBallStr != 0.0f)) {
+                moveDir = 0.0f;
+                moveSpd = SURGE_SPEED + 70.0f;
+            } else {
+                moveSpd = sqrtf(hozt*hozt + vert*vert);
+                moveDir = (atan2f(hozt, vert) * RAD_TO_DEG);
+            }
+        } else {
+            moveSpd = 70.0f;
+            moveDir = 180.0f;
+        }
     }
     
-    float moveCor = 0.0f;
     #if LIGHT_SENSORS
-    if(absLineSize != -1.0f) {
-        moveDir = float_mod(absLineAngle + 180.0f, 360.0f);
-        moveSpd = -lineAvoid.update(absLineSize, -1.0f);
-    }
+    line_avoid(moveDir, moveSpd);
     #endif
- 
-    if(defendGoal.exists()) {
-        float goalAngle = float_mod(defendGoal.arg + 180.0f, 360.0f);
-        moveCor = goalTrackDefend.update(normaliseAngle180(goalAngle), 0.0f);
-    } else {
-        moveCor = -correction.update(normaliseAngle180(bearing), 0.0);
-    }
- 
+
     #if DEBUG_MAIN_DEFEND
     Serial.printf("Move Dir: %.2f\tMove Spd: %.2f\tMove Cor: %.2f\n", moveDir, moveSpd, moveCor);
     Serial.printf("Hozt: %.2f\tVert: %.2f\n", hozt, vert);
     #endif
-    // if(relBallDir > 90.0f && relBallDir < 270.0f) {
-    //     calculate_attack();
-    // } else {
-    //     motors.run(moveSpd, float_mod(moveDir - bearing, 360.0f), moveCor);
-    // }
-    motors.run(0.0f, 0.0f, 30.0f);
-   
 }
 
-/// @brief  Updates our battery LED to show if our battery is low during a game.
 void update_battery_led() {
     batLvl = battery.get_lvl();
 
@@ -290,7 +293,6 @@ void update_battery_led() {
         digitalWrite(BATTERY_LED, LOW);
     }
 }
-
 
 void setup() {
     state = STATE_IDLE;
@@ -306,42 +308,41 @@ void setup() {
 
     bt.init();
     battery.init();
+
+    ballHandler.init();
     
     pinMode(ENABLE_SWITCH, INPUT);
-    pinMode(COM_MODULE, INPUT);
-    pinMode(PHOTOGATE_PIN, INPUT);
     pinMode(BATTERY_LED, OUTPUT);
 }
 
 void loop() {
     update_battery_led();
-    #if USE_COM_MODULE
-    bool motorsOn = (analogRead(COM_MODULE) > COM_MODULE_THRESH);
-    #else
+    ballHandler.update();
     bool motorsOn = digitalRead(ENABLE_SWITCH);
-    #endif
+
+    if (!motorsOn) {
+        state = STATE_IDLE;
+    } else if (!lastMotorsOn) {
+        state = STATE_CALIBRATE;
+    }
 
     switch (state) {
         case STATE_IDLE:
             motors.run(0.0f, 0.0f, 0.0f);
-            if(motorsOn && !lastMotorsOn) {
-                // If the motor switch has just turned on, calibrate.
-                state = STATE_CALIBRATE;
-            } else {
-                state = STATE_GAME;
-            }
             break;
 
         case STATE_CALIBRATE:
-            // calibrate stuff here
+            bno.getEvent(&event);
+            target = event.orientation.x;
             state = STATE_GAME;
+            break;
 
         case STATE_GAME: {
             bno.getEvent(&event); 
             bearing = float_mod(event.orientation.x - target, 360.0f);
 
             cam.update();
-            attackGoal = cam.get_attack();
+            attackGoal = cam.get_run_attack();
             defendGoal = cam.get_defend();
             ballData = cam.get_ball();
             update_field_position();
@@ -351,23 +352,10 @@ void loop() {
             ls.update();
             update_absolute_line();
 
-            // Serial.println(motorsOn);
-            bt.update(motorsOn, ballData, Vect(2.0f, 2.0f, false));
-
-            // bool attack = !CONTROL;
-            Serial.print(bt.get_role());
-            Serial.print("\t");
-            Serial.println(bt.get_other_role());
-            bool attack = true;
-
-            if (motorsOn) {
-                if (attack) {
-                    calculate_attack();
-                } else {
-                    calculate_defend();
-                }
+            if (bt.get_role()) {
+                run_attack();
             } else {
-                motors.run(0.0f, 0.0f, 0.0f);
+                run_defend();
             }
 
             #if DEBUG_MAIN_IMU
@@ -394,5 +382,7 @@ void loop() {
             break;
         }
     };
+
+    bt.update(motorsOn, ballData, Vect(2.0f, 2.0f, false));
     lastMotorsOn = motorsOn;
 }
