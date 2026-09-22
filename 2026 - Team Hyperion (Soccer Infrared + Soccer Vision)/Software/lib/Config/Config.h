@@ -211,7 +211,7 @@
 #define KICKER_REQUIRED_VOLT       40.0f
 #define KICKER_VOLTAGE_STABALISER  17.05498   // calibrate later
 #define KICKER_VOLTAGE_OFFSET      0.0  // calibrate later
-#define PHOTOGATE_THRESH           200        // ball held if analogRead > this
+#define PHOTOGATE_THRESH           700        // ball held if analogRead > this
 #define DRIBBLER_SPEED 100.0f
 
 /////////////////////////////// FIELD DIMENSIONS ///////////////////////////////
