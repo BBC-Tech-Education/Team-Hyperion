@@ -2,7 +2,7 @@
 #define CONFIG_H
 
 /////////////////////////////////// ROBOT ID ///////////////////////////////////
-#define CONTROL 1 // control = 1, chaos = 0
+#define CONTROL 0 // control = 1, chaos = 0
 #define GOAL_TRACKING 1
 #define ORBIT 1 // enables or disables Orbit
 #define SURGE 1 // enables or disables Surging
@@ -107,7 +107,7 @@
     #define ORBIT_DIST_EXP -14.56002f
 
     #define SWITCHING_STRENGTH 73.0f
-    #define DEFEND_CAM_TARGET 82.0f
+    #define DEFEND_CAM_TARGET 74.0f
     #define DEFEND_MAX_DIST 87.0f
     #define LS_THRESH 275
     #define KP_IMU 1.25
@@ -117,7 +117,7 @@
     #define KP_GOALT_DEF 1.25
     #define KD_GOALT_DEF 0.04
     #define KP_HOZT 1.5
-    #define KP_CVERT 10.0
+    #define KP_CVERT 12.5
     #define KP_LOC 3.0f
     #define KD_LOC 0.0
     #define KP_LAV 100.0

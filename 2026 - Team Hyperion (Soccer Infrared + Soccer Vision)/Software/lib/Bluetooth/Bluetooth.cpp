@@ -23,7 +23,6 @@ void Bluetooth::update(bool enabled, Vect ball, Vect pos) {
 
     connected = !connectedTimer.time_has_passed_no_update();
     calculate_role();
-    Serial.println(self.role);
 }
 
 void Bluetooth::read() {
@@ -69,12 +68,6 @@ void Bluetooth::calculate_role() {
     if (CONTROL) {
         if (switchTimer.time_has_passed_no_update()) {
             Vect defenderBall = self.role ? other.ball : self.ball;
-            Serial.print(defenderBall.mag < SWITCHING_STRENGTH);
-            Serial.print("\t");
-            Serial.print(defenderBall.isBetween(330.0f, 30.0f));
-            Serial.print("\t");
-            Serial.print(defenderBall.arg);
-            Serial.print("\t");
             if (defender_can_steal(defenderBall)) {
                 self.role = !self.role;
                 switchTimer.update();
