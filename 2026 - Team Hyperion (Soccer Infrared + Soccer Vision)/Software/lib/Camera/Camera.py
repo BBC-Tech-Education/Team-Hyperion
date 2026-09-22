@@ -5,7 +5,7 @@ from pyb import UART
 
 widSize = 480
 robot = False # control true, chaos false
-draw = True
+draw = False
 
 if robot:
     CENTER_X = widSize // 2 + 5
@@ -18,7 +18,7 @@ else:
     CENTER_X = widSize // 2 + 13 # 18
     CENTER_Y = widSize // 2 - 37
     MAX_RADIUS = 205
-    MIN_RADIUS = 40
+    MIN_RADIUS = 60
     INNER_CX = CENTER_X - 3
     INNER_CY = CENTER_Y - 5
 
@@ -37,9 +37,8 @@ sensor.set_auto_exposure(False, exposure_us=8000)
 
 uart = UART(3, 115200, timeout_char=100)
 
-# yellow, blue
 if robot:
-    goal_thresholds = [(28, 44, -128, 127, -128, -18), (29, 100, -11, 22, 24, 127)]
+    goal_thresholds = [(0, 100, -128, 127, -128, -11), (29, 100, -11, 22, 24, 127)]
     ball_threshold = [(47, 100, 19, 127, 38, 127)]#[(42, 100, -128, 127, 36, 127)]
 else:
     goal_thresholds = [(26, 35, -9, 10, -128, -13), (0, 55, 0, 10, 17, 53)]
@@ -156,4 +155,4 @@ while True:
         packet.append(safe_x)
         packet.append(safe_y)
     uart.write(packet)
-    print(data)
+    # print(data[2][1]-240)

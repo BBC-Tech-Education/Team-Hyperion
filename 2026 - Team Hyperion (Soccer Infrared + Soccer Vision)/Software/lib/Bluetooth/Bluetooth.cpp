@@ -30,8 +30,7 @@ void Bluetooth::read() {
         uint8_t b1 = BT_SERIAL.read();
         uint8_t b2 = BT_SERIAL.peek();
         if (b1 == BT_START_BYTE && b2 == BT_START_BYTE) {
-            BT_SERIAL.read(); // Consume second start byte
-            
+            BT_SERIAL.read();
             uint8_t info = BT_SERIAL.read();
             other.enabled = (info >> 1) & 0x01;
             other.role = info & 0x01;
@@ -51,12 +50,11 @@ void Bluetooth::read() {
 
 bool Bluetooth::defender_can_steal(Vect defenderBall) {
     return defenderBall.exists()
-        && defenderBall.isBetween(BALL_FRONT_MAX, BALL_FRONT_MIN)
+        && defenderBall.isBetween(330.0f, 30.0f)
         && defenderBall.mag < SWITCHING_STRENGTH;
 }
 
-void Bluetooth::calculate_role() {
-    
+void Bluetooth::calculate_role() {    
     if (!self.enabled) {
         self.role = true; // Attacker
         return;
@@ -70,7 +68,6 @@ void Bluetooth::calculate_role() {
     if (CONTROL) {
         if (switchTimer.time_has_passed_no_update()) {
             Vect defenderBall = self.role ? other.ball : self.ball;
-            Serial.println(self.ball.mag);
             if (defender_can_steal(defenderBall)) {
                 self.role = !self.role;
                 switchTimer.update();

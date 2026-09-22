@@ -246,6 +246,7 @@ void run_defend() {
     if(ballBehind) {
         orbit(moveDir, moveSpd);
         moveCor = bearingCor;
+        motors.run(moveSpd, float_mod(moveDir - bearing, 360.0f), moveCor);
     } else {
         if(defendGoal.exists()) {
             float goalAngle = float_mod(defendGoal.arg + 180.0f, 360.0f);
@@ -266,6 +267,7 @@ void run_defend() {
             moveSpd = 70.0f;
             moveDir = 180.0f;
         }
+        motors.run(moveSpd, moveDir, moveCor);
     }
     
     #if LIGHT_SENSORS
@@ -345,15 +347,11 @@ void loop() {
             update_field_position();
             relBallDir = ballData.arg;
             relBallStr = ballData.mag;
-            
+
             ls.update();
             update_absolute_line();
 
-            // Serial.print(bt.get_role());
-            // Serial.print("\t");
-            // Serial.println(bt.get_other_role());
-
-            if (bt.get_role()) {
+            if (false) {
                 run_attack();
             } else {
                 run_defend();
