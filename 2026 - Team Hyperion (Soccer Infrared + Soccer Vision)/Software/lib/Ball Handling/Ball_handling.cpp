@@ -13,8 +13,8 @@ BallHandling::BallHandling()
       isKicking(false),
       cooldownActive(false) {}
 
-bool BallHandling::ball_held() {
-    return analogRead(PHOTOGATE_PIN) > PHOTOGATE_THRESH;
+bool BallHandling::photogate_triggered() {
+    return analogRead(PHOTOGATE_PIN) < PHOTOGATE_THRESH;
 }
 
 void BallHandling::init() {
@@ -40,7 +40,7 @@ bool BallHandling::can_kick() {
     if (kickerVd.get_lvl() < KICKER_REQUIRED_VOLT) {
         return false;
     }
-    if (!ball_held()) {
+    if (!photogate_triggered()) {
         return false;
     }
     if (isKicking) {

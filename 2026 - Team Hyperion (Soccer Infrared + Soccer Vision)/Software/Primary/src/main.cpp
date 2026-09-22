@@ -137,28 +137,23 @@ void update_absolute_line() {
 }
 
 void line_avoid(float &mDir, float &mSpd) {
+    #if LIGHT_SENSORS
     if (absLineSize != -1.0f) {
-        
         if (relBallStr == 0.0f) {
             mDir = float_mod(absLineAngle + 180.0f, 360.0f);
             mSpd = -lineAvoid.update(absLineSize, -1.0f);
         } 
-        
         else if (absLineSize < LINE_AVOID_THRESH) {
             if (smallestAngleBetween(mDir, absLineAngle) < 90.0f) {
                 mSpd = sin(smallestAngleBetween(mDir, absLineAngle) * DEG_TO_RAD) * LS_SLIDE_CONST;
-                float difference = normaliseAngle180(float_mod(mDir - absLineAngle, 360.0f));
-                if (mDir > 0.0f) {
-                    mDir = float_mod(absLineAngle + 90.0f, 360.0f);
-                } else {
-                    mDir = float_mod(absLineAngle - 90.0f, 360.0f);
-                }
+                mDir = float_mod(absLineAngle + 90.0f, 360.0f);
             }
         } else {
             mDir = float_mod(absLineAngle + 180.0f, 360.0f);
             mSpd = -lineAvoid.update(absLineSize, -1.0f);
         }
     }
+    #endif
 }
 
 void orbit(float &mDir, float &mSpd) {
@@ -177,8 +172,8 @@ void orbit(float &mDir, float &mSpd) {
     surgeTimer--;
     if (((absBallDir < BALL_FRONT_MIN || absBallDir > BALL_FRONT_MAX) && (relBallStr < BALL_STR_CLOSE_THRESH))) {
         mDir = 0.0f;
-        surgeTimer = 100;
         mSpd = SURGE_SPEED + 70.0f;
+        surgeTimer = 100;
     } else if (surgeTimer > 0) {
         mDir = 0.0f;
         mSpd = SURGE_SPEED + 70.0f;
@@ -213,9 +208,7 @@ void run_attack() {
         #endif
     }
 
-    #if LIGHT_SENSORS
     line_avoid(moveDir, moveSpd);
-    #endif
 
     if (onField) {
         float facingError = (attackGoal.exists() && GOAL_TRACKING)
@@ -259,6 +252,9 @@ void run_defend() {
             if((relBallDir < BALL_FRONT_MIN || relBallDir > BALL_FRONT_MAX) && (relBallStr < BALL_STR_CLOSE_THRESH && relBallStr != 0.0f)) {
                 moveDir = 0.0f;
                 moveSpd = SURGE_SPEED + 70.0f;
+                if(onField) {
+                    ballHandler.kick();
+                }
             } else {
                 moveSpd = sqrtf(hozt*hozt + vert*vert);
                 moveDir = (atan2f(hozt, vert) * RAD_TO_DEG);
@@ -270,14 +266,7 @@ void run_defend() {
         motors.run(moveSpd, moveDir, moveCor);
     }
     
-    #if LIGHT_SENSORS
     line_avoid(moveDir, moveSpd);
-    #endif
-
-    #if DEBUG_MAIN_DEFEND
-    Serial.printf("Move Dir: %.2f\tMove Spd: %.2f\tMove Cor: %.2f\n", moveDir, moveSpd, moveCor);
-    Serial.printf("Hozt: %.2f\tVert: %.2f\n", hozt, vert);
-    #endif  
 }
 
 void update_battery_led() {

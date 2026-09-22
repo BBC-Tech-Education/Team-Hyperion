@@ -13,12 +13,13 @@ public:
     void init();
     void update();
     void kick();
+    bool photogate_triggered();
     bool can_kick();
     uint8_t get_current_kicks() { return kicks; };
-
+    
 private:
-
     void update_caps_led();
+
     VoltageDivider kickerVd;
     Timer pulseTimer;
     Timer rechargeTimer;
@@ -27,8 +28,6 @@ private:
     uint8_t kicks;
     bool isKicking;
     bool cooldownActive;
-
-    bool ball_held();
 };
 
 #endif
