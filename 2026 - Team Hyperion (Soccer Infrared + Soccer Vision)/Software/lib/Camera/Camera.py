@@ -4,7 +4,7 @@ import time
 from pyb import UART
 
 widSize = 480
-robot = True # control true, chaos false
+robot = False # control true, chaos false
 draw = False
 
 if robot:
@@ -15,10 +15,10 @@ if robot:
     INNER_CX = CENTER_X - 3
     INNER_CY = CENTER_Y - 0
 else:
-    CENTER_X = widSize // 2 + 13 # 18
-    CENTER_Y = widSize // 2 - 37
+    CENTER_X = widSize // 2 + 7 # 18
+    CENTER_Y = widSize // 2 - 25
     MAX_RADIUS = 205
-    MIN_RADIUS = 60
+    MIN_RADIUS = 74
     INNER_CX = CENTER_X - 3
     INNER_CY = CENTER_Y - 5
 
