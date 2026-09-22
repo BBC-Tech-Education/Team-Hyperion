@@ -85,5 +85,9 @@ void Camera::calculate_position() {
 }
 
 float Camera::px_to_mm(float mag) {
-    return 0.0000913503f * powf(mag, 3.51908) + 221.38261;
+    #if CONTROL
+    return 0;
+    #else
+    // return 0.000091x3503f * powf(mag, 3.51908) + 221.38261;
+    #endif
 }
