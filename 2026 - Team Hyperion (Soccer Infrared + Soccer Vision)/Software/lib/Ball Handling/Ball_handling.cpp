@@ -1,9 +1,5 @@
 #include "Ball_handling.h"
-
-// voltage divider
-// photogate
-// consult raj about the length of the timers
-
+ 
 BallHandling::BallHandling()
     : kickerVd(KICKER_VD_PIN, KICKER_VOLTAGE_STABALISER, KICKER_VOLTAGE_OFFSET),
       pulseTimer(KICK_PULSE_US),
@@ -12,27 +8,27 @@ BallHandling::BallHandling()
       kicks(MAX_KICKS),
       isKicking(false),
       cooldownActive(false) {}
-
-bool BallHandling::ball_held() {
-    return analogRead(PHOTOGATE_PIN) > PHOTOGATE_THRESH;
+ 
+bool BallHandling::photogate_triggered() {
+    return analogRead(PHOTOGATE_PIN) < PHOTOGATE_THRESH;
 }
-
+ 
 void BallHandling::init() {
     pinMode(KICKER_PIN, OUTPUT);
     digitalWrite(KICKER_PIN, HIGH);
-
+ 
     pinMode(PHOTOGATE_PIN, INPUT);
     kickerVd.init();
-
+ 
     kicks = MAX_KICKS;
     isKicking = false;
     cooldownActive = false;
-
+ 
     pulseTimer.update();
     rechargeTimer.update();
     cooldownTimer.update();
 }
-
+ 
 bool BallHandling::can_kick() {
     if (kicks <= 0) {
         return false;
@@ -40,7 +36,7 @@ bool BallHandling::can_kick() {
     if (kickerVd.get_lvl() < KICKER_REQUIRED_VOLT) {
         return false;
     }
-    if (!ball_held()) {
+    if (!photogate_triggered()) {
         return false;
     }
     if (isKicking) {
@@ -51,16 +47,16 @@ bool BallHandling::can_kick() {
     }
     return true;
 }
-
+ 
 void BallHandling::kick() {
     if (!can_kick()) return;
-
+ 
     digitalWrite(KICKER_PIN, LOW);
     isKicking = true;
     kicks--;
     pulseTimer.update();
 }
-
+ 
 void BallHandling::update() {
     update_caps_led();
     if (isKicking && pulseTimer.time_has_passed_no_update()) {
@@ -69,7 +65,7 @@ void BallHandling::update() {
         cooldownActive = true;
         cooldownTimer.update();
     }
-
+ 
     if (kicks < MAX_KICKS) {
         if (rechargeTimer.time_has_passed()) {
             kicks++;
@@ -78,7 +74,7 @@ void BallHandling::update() {
         rechargeTimer.update();
     }
 }
-
+ 
 void BallHandling::update_caps_led() {
     if(kickerVd.get_lvl() < 8) {
         digitalWrite(CAPS_LED, LOW);
