@@ -37,7 +37,6 @@ sensor.set_auto_exposure(False, exposure_us=8000)
 
 uart = UART(3, 115200, timeout_char=100)
 
-# yellow, blue
 if robot:
     goal_thresholds = [(28, 44, -128, 127, -128, -18), (29, 100, -11, 22, 24, 127)]
     ball_threshold = [(47, 100, 19, 127, 38, 127)]#[(42, 100, -128, 127, 36, 127)]
