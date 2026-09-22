@@ -351,7 +351,7 @@ void loop() {
             ls.update();
             update_absolute_line();
 
-            if (false) {
+            if (true) {
                 run_attack();
             } else {
                 run_defend();
