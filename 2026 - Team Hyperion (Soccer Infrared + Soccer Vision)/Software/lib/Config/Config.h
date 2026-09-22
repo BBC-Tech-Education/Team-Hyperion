@@ -186,7 +186,7 @@
 ////////////////////////////////// BLUETOOTH ///////////////////////////////////
 
 #define BT_SERIAL Serial8
-#define BT_BAUD 38400
+#define BT_BAUD 9600
 #define BT_PACKET_SIZE 11
 #define BT_START_BYTE 255
 #define BT_CONNECTION_TIMEOUT_US 1000000UL
