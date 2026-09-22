@@ -1,9 +1,6 @@
 #include "Ball_handling.h"
-
-// voltage divider
-// photogate
-// consult raj about the length of the timers
-
+#include <math.h>
+ 
 BallHandling::BallHandling()
     : kickerVd(KICKER_VD_PIN, KICKER_VOLTAGE_STABALISER, KICKER_VOLTAGE_OFFSET),
       pulseTimer(KICK_PULSE_US),
@@ -20,19 +17,28 @@ bool BallHandling::photogate_triggered() {
 void BallHandling::init() {
     pinMode(KICKER_PIN, OUTPUT);
     digitalWrite(KICKER_PIN, HIGH);
-
+ 
     pinMode(PHOTOGATE_PIN, INPUT);
     kickerVd.init();
 
+    pinMode(DRINA, OUTPUT);
+    pinMode(DRINB, OUTPUT);
+    pinMode(DRPWM, OUTPUT);
+    digitalWrite(DRINA, HIGH);
+    digitalWrite(DRINB, HIGH);
+    delayMicroseconds(100);
+    analogWriteFrequency(DRPWM, MOTOR_ANALOG_FRQ);
+    run_dribbler(0.0f);
+ 
     kicks = MAX_KICKS;
     isKicking = false;
     cooldownActive = false;
-
+ 
     pulseTimer.update();
     rechargeTimer.update();
     cooldownTimer.update();
 }
-
+ 
 bool BallHandling::can_kick() {
     if (kicks <= 0) {
         return false;
@@ -51,17 +57,18 @@ bool BallHandling::can_kick() {
     }
     return true;
 }
-
+ 
 void BallHandling::kick() {
     if (!can_kick()) return;
 
+    run_dribbler(0.0f);
     digitalWrite(KICKER_PIN, LOW);
     isKicking = true;
     kicks--;
     pulseTimer.update();
 }
-
-void BallHandling::update() {
+ 
+void BallHandling::update(float ballStr) {
     update_caps_led();
     if (isKicking && pulseTimer.time_has_passed_no_update()) {
         digitalWrite(KICKER_PIN, HIGH);
@@ -69,7 +76,7 @@ void BallHandling::update() {
         cooldownActive = true;
         cooldownTimer.update();
     }
-
+ 
     if (kicks < MAX_KICKS) {
         if (rechargeTimer.time_has_passed()) {
             kicks++;
@@ -77,8 +84,24 @@ void BallHandling::update() {
     } else {
         rechargeTimer.update();
     }
+
+    if (!isKicking && ((ballStr > DRIBBLER_STR_THRESH) || photogate_triggered())) {
+        run_dribbler(DRIBBLER_SPEED);
+    } else {
+        run_dribbler(0.0f);
+    }
 }
 
+void BallHandling::run_dribbler(float spd) {
+    if (spd > 255.0f) spd = 255.0f;
+    else if (spd < -255.0f) spd = -255.0f;
+
+    uint8_t finalSpd = round(fabs(spd));
+    analogWrite(DRPWM, finalSpd);
+    digitalWrite(DRINA, (spd > 0.0f));
+    digitalWrite(DRINB, (spd < 0.0f));
+}
+ 
 void BallHandling::update_caps_led() {
     if(kickerVd.get_lvl() < 8) {
         digitalWrite(CAPS_LED, LOW);

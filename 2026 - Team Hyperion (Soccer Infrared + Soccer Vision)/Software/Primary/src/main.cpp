@@ -10,7 +10,7 @@
 #include "PID.h"
 #include "Timer.h"
 #include "Voltage_divider.h"
-
+ 
 ///////////////////////////////////// FSMs ////////////////////////////////////
 enum RobotState {
     STATE_IDLE,
@@ -35,73 +35,91 @@ PID horizontal(KP_HOZT, 0.0, 0.0);
 PID vertCam(KP_CVERT, 0.0, 0.0);
 PID lineAvoid(KP_LAV, 0.0, KD_LAV, LAV_PID_MAX);
 PID localise(KP_LOC, 0.0, KD_LOC, LOC_PID_MAX);
- 
 // VOLTAGE DIVIDERS
 VoltageDivider battery(ROBOT_VD_PIN, ROBOT_VOLTAGE_STABALISER, ROBOT_VOLTAGE_OFFSET);
-
+ 
 // TIMERS
 Timer batteryTimer(BATTERY_TIMER_INTERVAL);
-
+Timer localiseTimer(LOCALISE_TIMER_INTERVAL);
+ 
 // FINITE STATE MACHINES
 RobotState state;
-
+ 
 // EVENTS
 sensors_event_t event;
-
+ 
 // VARIABLES
 float target = 0.0f;
 float bearing;
-
+ 
 float relBallDir = 0.0f;
 float relBallStr = 0;
 int surgeTimer = -1;
-
+ 
 float relLineAngle = -1.0f;
 float relLineSize = -1.0f;
 bool onField = true;
 float absLineAngle = -1.0f;
 float absLineSize = -1.0f;
-
+ 
 float batLvl = 0.0f;
-
+ 
 bool lastMotorsOn = false;
-
+ 
 Vect attackGoal;
 Vect defendGoal;
 Vect ballData;
 Vect fieldPosition;
 Vect otherFieldPosition;
 Vect otherBallData;
-
-
+ 
+ 
 /////////////////////////////////// FUNCTIONS /////////////////////////////////
-
-void update_field_position() {
+ 
+void update_field_vectors() {
     otherFieldPosition = bt.get_other_pos();
     otherBallData = bt.get_other_ball();
-    if(attackGoal.exists() && defendGoal.exists()) {
+
+    if (attackGoal.exists() && defendGoal.exists()) {
         fieldPosition = ((attackGoal + defendGoal) * -1.0) / 2.0;
-    } else if(attackGoal.exists() || defendGoal.exists()) {
+    } else if (attackGoal.exists() || defendGoal.exists()) {
         Vect centerOffset(((attackGoal.exists() ? -1.0 : 1.0) * FIELD_LENGTH_MM) / 2.0, false);
         fieldPosition = centerOffset - attackGoal;
-    } else if(ballData.exists() && otherBallData.exists()) {
-        fieldPosition = ballData - otherBallData + otherFieldPosition;
     } else {
         fieldPosition = Vect(0.0f, 0.0f, false);
     }
-}
 
+    bool hasRobotPos = fieldPosition.exists();
+    bool hasRobotBall = ballData.exists();
+    bool hasOtherPos = otherFieldPosition.exists();
+    bool hasOtherBall = otherBallData.exists();
+    int knownCount = (int)hasRobotPos + (int)hasRobotBall + (int)hasOtherPos + (int)hasOtherBall;
+
+    if (knownCount == 3) {
+        if (!hasRobotPos) {
+            fieldPosition = otherFieldPosition + otherBallData - ballData;
+        } else if (!hasRobotBall) {
+            ballData = otherFieldPosition + otherBallData - fieldPosition;
+        } else if (!hasOtherPos) {
+            otherFieldPosition = fieldPosition + ballData - otherBallData;
+        } else {
+            otherBallData = fieldPosition + ballData - otherFieldPosition;
+        }
+    } else if (!fieldPosition.exists()) {
+        fieldPosition = Vect(0.0f, 0.0f, false);
+    }
+}
+ 
 Vect move_to(Vect targetPosition) {
     return targetPosition - fieldPosition;
 }
-
+ 
 void update_absolute_line() {
     relLineAngle = ls.get_line_angle();
     relLineSize = ls.get_line_size();
     bool noLine = (relLineAngle == -1.0f);
-    
     float lineDirection = noLine ? -1.0f : float_mod(relLineAngle + bearing, 360.0f);
-
+ 
     if (onField) {
         if (!noLine) {
             absLineAngle = lineDirection;
@@ -135,7 +153,7 @@ void update_absolute_line() {
         }
     }
 }
-
+ 
 void line_avoid(float &mDir, float &mSpd) {
     #if LIGHT_SENSORS
     if (absLineSize != -1.0f) {
@@ -155,7 +173,7 @@ void line_avoid(float &mDir, float &mSpd) {
     }
     #endif
 }
-
+ 
 void orbit(float &mDir, float &mSpd) {
     float absBallDir = float_mod(relBallDir + bearing, 360.0f);
     float orbitTarget = 0.0f;
@@ -167,7 +185,7 @@ void orbit(float &mDir, float &mSpd) {
     float ballAngDiff = (dir > 0.0f ? 1.0f : -1.0f) * fmin(90.0f, 0.000000309786f*pow(dir, 4) + 0.0000534514f*pow(dir, 3) + 0.0163822f*dir*dir - 0.00204537f*dir + 10.0f);
     float distMulti = 0.8f;
     float angleAddition = distMulti * ballAngDiff;
-
+ 
     #if SURGE
     surgeTimer--;
     if (((absBallDir < BALL_FRONT_MIN || absBallDir > BALL_FRONT_MAX) && (relBallStr < BALL_STR_CLOSE_THRESH))) {
@@ -183,31 +201,37 @@ void orbit(float &mDir, float &mSpd) {
     #else
     mDir = float_mod(absBallDir + angleAddition, 360.0f);
     #endif
-
+ 
     mSpd = BASE_SPEED + (SURGE_SPEED - BASE_SPEED) * (1.0f - fabs(angleAddition / 90.0f));
     #endif
 }
-
+ 
 void run_attack() {
     float moveDir = 0.0f;
     float moveSpd = 0.0f;
     float moveCor = 0.0f;
-
+ 
     if (relBallStr != 0.0f) {
+        localiseTimer.update();
         orbit(moveDir, moveSpd);
     } else {
         #if LOCALISATION
-        Vect targetVector(0.0f, 0.0f, false);
-        Vect moveVector = move_to(targetVector);
-        moveVector = moveVector.to_bearing();
-        moveDir = moveVector.arg;
-        moveSpd = fabs(localise.update(moveVector.mag, 0.0f));
+        if (localiseTimer.time_has_passed_no_update()) {
+            Vect targetVector(0.0f, 0.0f, false);
+            Vect moveVector = move_to(targetVector);
+            moveVector = moveVector.to_bearing();
+            moveDir = moveVector.arg;
+            moveSpd = fabs(localise.update(moveVector.mag, 0.0f));
+        } else {
+            moveDir = 0.0f;
+            moveSpd = 0.0f;
+        }
         #else
         moveDir = 0.0f;
         moveSpd = 0.0f;
         #endif
     }
-
+ 
     line_avoid(moveDir, moveSpd);
 
     if (onField) {
@@ -218,24 +242,24 @@ void run_attack() {
             ballHandler.kick();
         }
     }
-
+ 
     if (attackGoal.exists() && GOAL_TRACKING) {
         float goalAngle = normaliseAngle180(float_mod(attackGoal.arg, 360.0f));
         moveCor = goalTrackAttack.update(goalAngle, 0.0f);
     } else {
         moveCor = -correction.update(normaliseAngle180(bearing), 0.0f);
     }
-
+ 
     motors.run(moveSpd, float_mod(moveDir - bearing, 360.0f), moveCor);
 }
-
+ 
 void run_defend() {
     float moveDir = 0.0f;
     float moveSpd = 0.0f;
     float moveCor = 0.0f;
     bool ballBehind = relBallDir > 90.0f && relBallDir < 270.0f;
     float bearingCor = -correction.update(normaliseAngle180(bearing), 0.0);
-
+ 
     if(ballBehind) {
         orbit(moveDir, moveSpd);
         moveCor = bearingCor;
@@ -268,10 +292,10 @@ void run_defend() {
     
     line_avoid(moveDir, moveSpd);
 }
-
+ 
 void update_battery_led() {
     batLvl = battery.get_lvl();
-
+ 
     if (batLvl > ROBOT_REQUIRED_VOLT) {
         batteryTimer.update();
         digitalWrite(BATTERY_LED, LOW);
@@ -281,7 +305,7 @@ void update_battery_led() {
         digitalWrite(BATTERY_LED, LOW);
     }
 }
-
+ 
 void setup() {
     state = STATE_IDLE;
 
@@ -289,88 +313,86 @@ void setup() {
         Serial.println("No BNO055 detected.");
         delay(1000);
     }
-
+ 
     cam.init();
     motors.init();
     ls.init();
-
+ 
     bt.init();
     battery.init();
-
+ 
     ballHandler.init();
-    
     pinMode(ENABLE_SWITCH, INPUT);
     pinMode(BATTERY_LED, OUTPUT);
 }
-
+ 
 void loop() {
     update_battery_led();
-    ballHandler.update();
     bool motorsOn = digitalRead(ENABLE_SWITCH);
-
+ 
     if (!motorsOn) {
         state = STATE_IDLE;
     } else if (!lastMotorsOn) {
         state = STATE_CALIBRATE;
     }
-
+ 
     switch (state) {
         case STATE_IDLE:
             motors.run(0.0f, 0.0f, 0.0f);
             break;
-
+ 
         case STATE_CALIBRATE:
             bno.getEvent(&event);
             target = event.orientation.x;
             state = STATE_GAME;
             break;
-
+ 
         case STATE_GAME: {
             bno.getEvent(&event); 
             bearing = float_mod(event.orientation.x - target, 360.0f);
-
+ 
             cam.update();
             attackGoal = cam.get_attack();
             defendGoal = cam.get_defend();
             ballData = cam.get_ball();
-            update_field_position();
+            update_field_vectors();
             relBallDir = ballData.arg;
             relBallStr = ballData.mag;
-
+ 
             ls.update();
             update_absolute_line();
-
+ 
             if (bt.get_role()) {
                 run_attack();
             } else {
                 run_defend();
             }
-
+ 
             #if DEBUG_MAIN_IMU
             Serial.printf("Bearing: %.2f\tRaw: %.2f\n", bearing, event.orientation.x);
             #endif
-
+ 
             #if DEBUG_MAIN_GOALS
             Serial.printf("Attack Ang: %.2f\tAttack Dist: %.2f\tAttack Vis: %d\n",
                           attackGoal.arg, attackGoal.mag, attackGoal.exists());
             Serial.printf("Defend Ang: %.2f\tDefend Dist: %.2f\tDefend Vis: %d\n",
                           defendGoal.arg, defendGoal.mag, defendGoal.exists());
             #endif
-
+ 
             #if DEBUG_MAIN_LINE
             Serial.printf("Rel Ang: %.2f\tRel Size: %.2f\n", relLineAngle, relLineSize);
             Serial.printf("Abs Ang: %.2f\tAbs Size: %.2f\tOn Field: %d\n",
                           absLineAngle, absLineSize, onField);
             #endif
-
+ 
             #if DEBUG_MAIN
             Serial.println();
             #endif
-            
             break;
         }
     };
-
-    bt.update(motorsOn, ballData, Vect(2.0f, 2.0f, false));
+ 
+    ballHandler.update(relBallStr);
+    bt.update(motorsOn, ballData, fieldPosition);
     lastMotorsOn = motorsOn;
 }
