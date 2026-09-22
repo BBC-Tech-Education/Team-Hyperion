@@ -355,6 +355,8 @@ void loop() {
             attackGoal = cam.get_attack();
             defendGoal = cam.get_defend();
             ballData = cam.get_ball();
+
+            
             update_field_vectors();
             relBallDir = ballData.arg;
             relBallStr = ballData.mag;
@@ -395,4 +397,5 @@ void loop() {
     ballHandler.update(relBallStr);
     bt.update(motorsOn, ballData, fieldPosition);
     lastMotorsOn = motorsOn;
+    // Serial.println(ballData.mag);
 }
