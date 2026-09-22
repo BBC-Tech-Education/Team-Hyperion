@@ -50,7 +50,7 @@
 #define KICKER_VD_PIN 26
 #define ROBOT_VD_PIN 27
 #define BATTERY_LED 30
-#define SPARE_LED 31
+#define CAPS_LED 31
 
 
 

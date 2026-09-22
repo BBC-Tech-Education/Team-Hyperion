@@ -14,15 +14,17 @@ public:
     void update();
     void kick();
     bool can_kick();
-    int get_current_kicks();
+    uint8_t get_current_kicks() { return kicks; };
 
 private:
+
+    void update_caps_led();
     VoltageDivider kickerVd;
     Timer pulseTimer;
     Timer rechargeTimer;
     Timer cooldownTimer;
 
-    int kicks;
+    uint8_t kicks;
     bool isKicking;
     bool cooldownActive;
 

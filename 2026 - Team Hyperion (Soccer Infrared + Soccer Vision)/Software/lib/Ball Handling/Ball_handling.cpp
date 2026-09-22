@@ -1,5 +1,9 @@
 #include "Ball_handling.h"
 
+// voltage divider
+// photogate
+// consult raj about the length of the timers
+
 BallHandling::BallHandling()
     : kickerVd(KICKER_VD_PIN, KICKER_VOLTAGE_STABALISER, KICKER_VOLTAGE_OFFSET),
       pulseTimer(KICK_PULSE_US),
@@ -11,10 +15,6 @@ BallHandling::BallHandling()
 
 bool BallHandling::ball_held() {
     return analogRead(PHOTOGATE_PIN) > PHOTOGATE_THRESH;
-}
-
-int BallHandling::get_current_kicks() {
-    return kicks;
 }
 
 void BallHandling::init() {
@@ -62,6 +62,7 @@ void BallHandling::kick() {
 }
 
 void BallHandling::update() {
+    update_caps_led();
     if (isKicking && pulseTimer.time_has_passed_no_update()) {
         digitalWrite(KICKER_PIN, HIGH);
         isKicking = false;
@@ -75,5 +76,13 @@ void BallHandling::update() {
         }
     } else {
         rechargeTimer.update();
+    }
+}
+
+void BallHandling::update_caps_led() {
+    if(kickerVd.get_lvl() < 8) {
+        digitalWrite(CAPS_LED, LOW);
+    } else {
+        digitalWrite(CAPS_LED, HIGH);
     }
 }

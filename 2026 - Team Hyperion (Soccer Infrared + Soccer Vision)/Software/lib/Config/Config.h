@@ -201,14 +201,14 @@
 
 /////////////////////////////// BALL HANDLING /////////////////////////////////
 
-#define KICK_PULSE_US              10000UL    // pin LOW duration (us)
-#define KICK_RECHARGE_US           2000000UL  // +1 kick every this many us
-#define KICK_COOLDOWN_US           500000UL   // after pulse ends (us)
+#define KICK_PULSE_US              300000UL    // pin LOW duration (us)
+#define KICK_RECHARGE_US           20000000UL  // +1 kick every this many us
+#define KICK_COOLDOWN_US           5000000UL   // after pulse ends (us)
 #define MAX_KICKS                  5
-#define KICKER_REQUIRED_VOLT       12.5f
-#define KICKER_VOLTAGE_STABALISER  71.58083   // calibrate later
-#define KICKER_VOLTAGE_OFFSET      0.0146378  // calibrate later
-#define PHOTOGATE_THRESH           512        // ball held if analogRead > this
+#define KICKER_REQUIRED_VOLT       40.0f
+#define KICKER_VOLTAGE_STABALISER  17.05498   // calibrate later
+#define KICKER_VOLTAGE_OFFSET      0.0  // calibrate later
+#define PHOTOGATE_THRESH           200        // ball held if analogRead > this
 
 /////////////////////////////// FIELD DIMENSIONS ///////////////////////////////
 #define FIELD_LENGTH_MM 2400
