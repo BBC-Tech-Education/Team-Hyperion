@@ -63,6 +63,8 @@
     #define SURGE_SPEED 110.0f //130.0f
     #define BALL_STR_CLOSE_THRESH 20.0f //20.0f
     #define BALL_CLOSE_STR 75.0f //65.0f
+    #define DRIBBLER_STR_THRESH 75.0f
+    #define DRIBBLER_SPEED 200.0f
     #define BALL_FRONT_MIN 35.0f //35.0f
     #define BALL_FRONT_MAX 330.f //345.0f
     #define ORBIT_TARGET_OFFSET 45.0f
@@ -97,6 +99,7 @@
     #define SURGE_SPEED 110.0f //130.0f
     #define BALL_STR_CLOSE_THRESH 20.0f //20.0f
     #define BALL_CLOSE_STR 75.0f //65.0f
+    #define DRIBBLER_STR_THRESH 75.0f
     #define BALL_FRONT_MIN 35.0f //35.0f
     #define BALL_FRONT_MAX 330.f //345.0f
     #define ORBIT_TARGET_OFFSET 45.0f
@@ -138,7 +141,8 @@
 #define LAV_PID_MAX 150.0f
 #define LOC_PID_MAX 80.0f
 
-#define BATTERY_TIMER_INTERVAL 1000000
+#define BATTERY_TIMER_INTERVAL 1000000UL
+#define LOCALISE_TIMER_INTERVAL 3000000UL
 
 #define BALL_DIR_DIVISOR 100.0f
 
@@ -208,6 +212,7 @@
 #define KICKER_VOLTAGE_STABALISER  17.05498   // calibrate later
 #define KICKER_VOLTAGE_OFFSET      0.0  // calibrate later
 #define PHOTOGATE_THRESH           200        // ball held if analogRead > this
+#define DRIBBLER_SPEED 100.0f
 
 /////////////////////////////// FIELD DIMENSIONS ///////////////////////////////
 #define FIELD_LENGTH_MM 2400

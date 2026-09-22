@@ -1,4 +1,5 @@
 #include "Ball_handling.h"
+#include <math.h>
  
 BallHandling::BallHandling()
     : kickerVd(KICKER_VD_PIN, KICKER_VOLTAGE_STABALISER, KICKER_VOLTAGE_OFFSET),
@@ -12,13 +13,22 @@ BallHandling::BallHandling()
 bool BallHandling::photogate_triggered() {
     return analogRead(PHOTOGATE_PIN) < PHOTOGATE_THRESH;
 }
- 
+
 void BallHandling::init() {
     pinMode(KICKER_PIN, OUTPUT);
     digitalWrite(KICKER_PIN, HIGH);
  
     pinMode(PHOTOGATE_PIN, INPUT);
     kickerVd.init();
+
+    pinMode(DRINA, OUTPUT);
+    pinMode(DRINB, OUTPUT);
+    pinMode(DRPWM, OUTPUT);
+    digitalWrite(DRINA, HIGH);
+    digitalWrite(DRINB, HIGH);
+    delayMicroseconds(100);
+    analogWriteFrequency(DRPWM, MOTOR_ANALOG_FRQ);
+    run_dribbler(0.0f);
  
     kicks = MAX_KICKS;
     isKicking = false;
@@ -50,14 +60,15 @@ bool BallHandling::can_kick() {
  
 void BallHandling::kick() {
     if (!can_kick()) return;
- 
+
+    run_dribbler(0.0f);
     digitalWrite(KICKER_PIN, LOW);
     isKicking = true;
     kicks--;
     pulseTimer.update();
 }
  
-void BallHandling::update() {
+void BallHandling::update(float ballStr) {
     update_caps_led();
     if (isKicking && pulseTimer.time_has_passed_no_update()) {
         digitalWrite(KICKER_PIN, HIGH);
@@ -73,6 +84,22 @@ void BallHandling::update() {
     } else {
         rechargeTimer.update();
     }
+
+    if (!isKicking && ((ballStr > DRIBBLER_STR_THRESH) || photogate_triggered())) {
+        run_dribbler(DRIBBLER_SPEED);
+    } else {
+        run_dribbler(0.0f);
+    }
+}
+
+void BallHandling::run_dribbler(float spd) {
+    if (spd > 255.0f) spd = 255.0f;
+    else if (spd < -255.0f) spd = -255.0f;
+
+    uint8_t finalSpd = round(fabs(spd));
+    analogWrite(DRPWM, finalSpd);
+    digitalWrite(DRINA, (spd > 0.0f));
+    digitalWrite(DRINB, (spd < 0.0f));
 }
  
 void BallHandling::update_caps_led() {

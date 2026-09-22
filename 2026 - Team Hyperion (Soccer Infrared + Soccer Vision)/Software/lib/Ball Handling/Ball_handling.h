@@ -11,7 +11,7 @@ class BallHandling {
 public:
     BallHandling();
     void init();
-    void update();
+    void update(float ballStr = 0.0f);
     void kick();
     bool photogate_triggered();
     bool can_kick();
@@ -19,6 +19,7 @@ public:
    
 private:
     void update_caps_led();
+    void run_dribbler(float spd);
  
     VoltageDivider kickerVd;
     Timer pulseTimer;

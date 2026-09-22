@@ -17,7 +17,7 @@ enum RobotState {
     STATE_CALIBRATE,
     STATE_GAME
 };
- 
+
 //////////////////////////////////// OBJECTS //////////////////////////////////
 // ROBOT SYSTEMS
 Adafruit_BNO055 bno(BNO055_SENSOR_ID, BNO055_ADDRESS_B, &Wire);
@@ -26,7 +26,7 @@ Camera cam;
 DriveSystem motors;
 LightSystem ls;
 Bluetooth bt;
- 
+
 // PIDs
 PID correction(KP_IMU, 0.0, KD_IMU, IMU_PID_MAX);
 PID goalTrackAttack(KP_GOALT_ATK, 0.0, KD_GOALT_ATK, GOALT_PID_MAX);
@@ -40,6 +40,7 @@ VoltageDivider battery(ROBOT_VD_PIN, ROBOT_VOLTAGE_STABALISER, ROBOT_VOLTAGE_OFF
  
 // TIMERS
 Timer batteryTimer(BATTERY_TIMER_INTERVAL);
+Timer localiseTimer(LOCALISE_TIMER_INTERVAL);
  
 // FINITE STATE MACHINES
 RobotState state;
@@ -75,17 +76,36 @@ Vect otherBallData;
  
 /////////////////////////////////// FUNCTIONS /////////////////////////////////
  
-void update_field_position() {
+void update_field_vectors() {
     otherFieldPosition = bt.get_other_pos();
     otherBallData = bt.get_other_ball();
-    if(attackGoal.exists() && defendGoal.exists()) {
+
+    if (attackGoal.exists() && defendGoal.exists()) {
         fieldPosition = ((attackGoal + defendGoal) * -1.0) / 2.0;
-    } else if(attackGoal.exists() || defendGoal.exists()) {
+    } else if (attackGoal.exists() || defendGoal.exists()) {
         Vect centerOffset(((attackGoal.exists() ? -1.0 : 1.0) * FIELD_LENGTH_MM) / 2.0, false);
         fieldPosition = centerOffset - attackGoal;
-    } else if(ballData.exists() && otherBallData.exists()) {
-        fieldPosition = ballData - otherBallData + otherFieldPosition;
     } else {
+        fieldPosition = Vect(0.0f, 0.0f, false);
+    }
+
+    bool hasRobotPos = fieldPosition.exists();
+    bool hasRobotBall = ballData.exists();
+    bool hasOtherPos = otherFieldPosition.exists();
+    bool hasOtherBall = otherBallData.exists();
+    int knownCount = (int)hasRobotPos + (int)hasRobotBall + (int)hasOtherPos + (int)hasOtherBall;
+
+    if (knownCount == 3) {
+        if (!hasRobotPos) {
+            fieldPosition = otherFieldPosition + otherBallData - ballData;
+        } else if (!hasRobotBall) {
+            ballData = otherFieldPosition + otherBallData - fieldPosition;
+        } else if (!hasOtherPos) {
+            otherFieldPosition = fieldPosition + ballData - otherBallData;
+        } else {
+            otherBallData = fieldPosition + ballData - otherFieldPosition;
+        }
+    } else if (!fieldPosition.exists()) {
         fieldPosition = Vect(0.0f, 0.0f, false);
     }
 }
@@ -192,14 +212,20 @@ void run_attack() {
     float moveCor = 0.0f;
  
     if (relBallStr != 0.0f) {
+        localiseTimer.update();
         orbit(moveDir, moveSpd);
     } else {
         #if LOCALISATION
-        Vect targetVector(0.0f, 0.0f, false);
-        Vect moveVector = move_to(targetVector);
-        moveVector = moveVector.to_bearing();
-        moveDir = moveVector.arg;
-        moveSpd = fabs(localise.update(moveVector.mag, 0.0f));
+        if (localiseTimer.time_has_passed_no_update()) {
+            Vect targetVector(0.0f, 0.0f, false);
+            Vect moveVector = move_to(targetVector);
+            moveVector = moveVector.to_bearing();
+            moveDir = moveVector.arg;
+            moveSpd = fabs(localise.update(moveVector.mag, 0.0f));
+        } else {
+            moveDir = 0.0f;
+            moveSpd = 0.0f;
+        }
         #else
         moveDir = 0.0f;
         moveSpd = 0.0f;
@@ -281,7 +307,7 @@ void update_battery_led() {
  
 void setup() {
     state = STATE_IDLE;
- 
+
     while (!bno.begin(OPERATION_MODE_IMUPLUS)) {
         Serial.println("No BNO055 detected.");
         delay(1000);
@@ -301,7 +327,6 @@ void setup() {
  
 void loop() {
     update_battery_led();
-    ballHandler.update();
     bool motorsOn = digitalRead(ENABLE_SWITCH);
  
     if (!motorsOn) {
@@ -329,7 +354,7 @@ void loop() {
             attackGoal = cam.get_attack();
             defendGoal = cam.get_defend();
             ballData = cam.get_ball();
-            update_field_position();
+            update_field_vectors();
             relBallDir = ballData.arg;
             relBallStr = ballData.mag;
  
@@ -366,6 +391,7 @@ void loop() {
         }
     };
  
-    bt.update(motorsOn, ballData, Vect(2.0f, 2.0f, false));
+    ballHandler.update(relBallStr);
+    bt.update(motorsOn, ballData, fieldPosition);
     lastMotorsOn = motorsOn;
 }
