@@ -9,7 +9,7 @@ public:
     Camera() {}
     void init();
     void update();
-    
+    float px_to_mm(float mag);
     Vect get_ball() { return ball; };
     Vect get_attack() { return attack; };
     Vect get_defend() { return defend; };
@@ -29,7 +29,7 @@ private:
 
     void read();
     void calculate_position();
-    float px_to_mm(float mag);
+    
 };
 
 #endif

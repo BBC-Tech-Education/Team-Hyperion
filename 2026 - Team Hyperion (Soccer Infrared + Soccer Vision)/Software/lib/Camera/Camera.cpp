@@ -90,6 +90,6 @@ float Camera::px_to_mm(float mag) {
     return 0;
     #else
     // new mirror px->mm
-    return 0;
+    return 15.86018 * pow(1.0433,mag) + 50;
     #endif
 }
