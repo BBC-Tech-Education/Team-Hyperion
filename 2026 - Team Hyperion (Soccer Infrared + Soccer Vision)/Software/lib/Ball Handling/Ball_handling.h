@@ -32,5 +32,5 @@ private:
     bool isKicking;
     bool cooldownActive;
 };
- 
+
 #endif

@@ -181,10 +181,17 @@ void orbit(float &mDir, float &mSpd) {
         orbitTarget = float_mod(bearing, 360.0f);
     }
     #if ORBIT
+    #if CONTROL
     float dir = normaliseAngle180(float_mod(absBallDir - orbitTarget, 360.0f));
     float ballAngDiff = (dir > 0.0f ? 1.0f : -1.0f) * fmin(90.0f, 0.000000309786f*pow(dir, 4) + 0.0000534514f*pow(dir, 3) + 0.0163822f*dir*dir - 0.00204537f*dir + 10.0f);
     float distMulti = 0.8f;
     float angleAddition = distMulti * ballAngDiff;
+    #else
+    float dir = normaliseAngle180(float_mod(absBallDir - orbitTarget, 360.0f));
+    float ballAngDiff = (dir > 0.0f ? 1.0f : -1.0f) * fmin(90.0f, 0.000000309786f*pow(dir, 4) + 0.0000534514f*pow(dir, 3) + 0.0163822f*dir*dir - 0.00204537f*dir + 10.0f);
+    float distMulti = 0.8f;
+    float angleAddition = distMulti * ballAngDiff;
+    #endif
 
     #if SURGE
     surgeTimer--;

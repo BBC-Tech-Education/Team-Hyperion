@@ -73,7 +73,6 @@
     #define ORBIT_DIST_MULTI 12.41625f
     #define ORBIT_DIST_EXP -14.56002f
 
-    #define SWITCHING_STRENGTH 50.0f
     #define DEFEND_CAM_TARGET 70.0
     #define DEFEND_MAX_DIST 465.07
     #define LS_THRESH 275
@@ -108,7 +107,6 @@
     #define ORBIT_DIST_MULTI 1//12.41625f / 4.0f
     #define ORBIT_DIST_EXP 1//-14.56002f
 
-    #define SWITCHING_STRENGTH 73.0f
     #define DEFEND_CAM_TARGET 84.0f
     #define DEFEND_MAX_DIST 97.0f
     #define LS_THRESH 275
@@ -196,6 +194,7 @@
 #define BT_CONNECTION_TIMEOUT_US 1000000UL
 #define BT_SEND_TIMER_US 20000
 #define BT_SWITCH_TIMER_US 5000000UL // min time between defender-steal role swaps
+#define SWITCHING_STRENGTH 50.0f
 
 /////////////////////////////// VOLTAGE DIVIDERS ///////////////////////////////
 
