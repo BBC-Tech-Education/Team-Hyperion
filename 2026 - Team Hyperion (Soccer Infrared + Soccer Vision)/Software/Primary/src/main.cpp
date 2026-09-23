@@ -267,8 +267,9 @@ void run_defend() {
     } else {
         if(defendGoal.exists()) {
             float goalAngle = float_mod(defendGoal.arg + 180.0f, 360.0f);
-            moveCor = goalTrackDefend.update(normaliseAngle180(goalAngle), 0.0f);
-            float vert = vertCam.update(defendGoal.mag, DEFEND_CAM_TARGET);
+            //moveCor = goalTrackDefend.update(normaliseAngle180(goalAngle), 0.0f);
+            moveCor = bearingCor;
+            float vert = vertCam.update(defendGoal.mag / 4.0f, DEFEND_CAM_TARGET);
             float hozt = 0.0f;
             if(relBallStr != 0.0f) {
                 hozt = horizontal.update((relBallStr != 0.0f) ? -normaliseAngle180(relBallDir) : normaliseAngle180(bearing), 0.0f);
@@ -364,7 +365,7 @@ void loop() {
             ls.update();
             update_absolute_line();
  
-            if (true) {
+            if (false) {
                 run_attack();
             } else {
                 run_defend();
