@@ -364,7 +364,7 @@ void loop() {
             ls.update();
             update_absolute_line();
  
-            if (bt.get_role()) {
+            if (true) {
                 run_attack();
             } else {
                 run_defend();

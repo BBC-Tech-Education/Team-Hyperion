@@ -97,16 +97,16 @@
 // CHAOS
     #define BASE_SPEED 90.0f //110.0f
     #define SURGE_SPEED 110.0f //130.0f
-    #define BALL_STR_CLOSE_THRESH 20.0f //20.0f
-    #define BALL_CLOSE_STR 75.0f //65.0f
-    #define DRIBBLER_STR_THRESH 75.0f
+    #define BALL_STR_CLOSE_THRESH 20.0f / 4.0f//20.0f
+    #define BALL_CLOSE_STR 80.0f / 4.0f //65.0f
+    #define DRIBBLER_STR_THRESH 75.0f / 4.0f
     #define BALL_FRONT_MIN 35.0f //35.0f
     #define BALL_FRONT_MAX 330.f //345.0f
     #define ORBIT_TARGET_OFFSET 45.0f
     #define ORBIT_DIR_MULTI 1.20636f //0.4f
     #define ORBIT_DIR_EXP 0.0660224f //0.25f
-    #define ORBIT_DIST_MULTI 12.41625f
-    #define ORBIT_DIST_EXP -14.56002f
+    #define ORBIT_DIST_MULTI 1//12.41625f / 4.0f
+    #define ORBIT_DIST_EXP 1//-14.56002f
 
     #define SWITCHING_STRENGTH 73.0f
     #define DEFEND_CAM_TARGET 74.0f
