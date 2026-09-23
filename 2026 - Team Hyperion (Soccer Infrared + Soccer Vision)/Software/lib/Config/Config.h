@@ -2,7 +2,7 @@
 #define CONFIG_H
 
 /////////////////////////////////// ROBOT ID ///////////////////////////////////
-#define CONTROL 1 // control = 1, chaos = 0
+#define CONTROL 0 // control = 1, chaos = 0
 #define GOAL_TRACKING 1
 #define ORBIT 1 // enables or disables Orbit
 #define SURGE 1 // enables or disables Surging
@@ -97,29 +97,30 @@
 // CHAOS
     #define BASE_SPEED 90.0f //110.0f
     #define SURGE_SPEED 110.0f //130.0f
-    #define BALL_STR_CLOSE_THRESH 20.0f //20.0f
-    #define BALL_CLOSE_STR 75.0f //65.0f
-    #define DRIBBLER_STR_THRESH 75.0f
+    #define BALL_STR_CLOSE_THRESH 20.0f / 4.0f//20.0f
+    #define BALL_CLOSE_STR 80.0f / 4.0f //65.0f
+    #define DRIBBLER_STR_THRESH 75.0f / 4.0f
     #define BALL_FRONT_MIN 35.0f //35.0f
     #define BALL_FRONT_MAX 330.f //345.0f
     #define ORBIT_TARGET_OFFSET 45.0f
     #define ORBIT_DIR_MULTI 1.20636f //0.4f
     #define ORBIT_DIR_EXP 0.0660224f //0.25f
-    #define ORBIT_DIST_MULTI 12.41625f
-    #define ORBIT_DIST_EXP -14.56002f
+    #define ORBIT_DIST_MULTI 1//12.41625f / 4.0f
+    #define ORBIT_DIST_EXP 1//-14.56002f
 
     #define SWITCHING_STRENGTH 73.0f
-    #define DEFEND_CAM_TARGET 74.0f
-    #define DEFEND_MAX_DIST 87.0f
+    #define DEFEND_CAM_TARGET 84.0f
+    #define DEFEND_MAX_DIST 97.0f
     #define LS_THRESH 275
     #define KP_IMU 1.25
     #define KD_IMU 0.04 // 0.04
     #define KP_GOALT_ATK 0.8
     #define KD_GOALT_ATK 0.04
+    
     #define KP_GOALT_DEF 1.25
     #define KD_GOALT_DEF 0.04
     #define KP_HOZT 1.5
-    #define KP_CVERT 12.5
+    #define KP_CVERT 12.5 / 12.0
     #define KP_LOC 3.0f
     #define KD_LOC 0.0
     #define KP_LAV 100.0

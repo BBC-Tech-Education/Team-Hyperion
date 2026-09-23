@@ -268,8 +268,9 @@ void run_defend() {
     } else {
         if(defendGoal.exists()) {
             float goalAngle = float_mod(defendGoal.arg + 180.0f, 360.0f);
-            moveCor = goalTrackDefend.update(normaliseAngle180(goalAngle), 0.0f);
-            float vert = vertCam.update(defendGoal.mag, DEFEND_CAM_TARGET);
+            //moveCor = goalTrackDefend.update(normaliseAngle180(goalAngle), 0.0f);
+            moveCor = bearingCor;
+            float vert = vertCam.update(defendGoal.mag / 4.0f, DEFEND_CAM_TARGET);
             float hozt = 0.0f;
             if(relBallStr != 0.0f) {
                 hozt = horizontal.update((relBallStr != 0.0f) ? -normaliseAngle180(relBallDir) : normaliseAngle180(bearing), 0.0f);
@@ -356,6 +357,8 @@ void loop() {
             attackGoal = cam.get_attack();
             defendGoal = cam.get_defend();
             ballData = cam.get_ball();
+
+            
             update_field_vectors();
             relBallDir = ballData.arg;
             relBallStr = ballData.mag;
@@ -397,4 +400,5 @@ void loop() {
     ballHandler.update(relBallStr);
     bt.update(motorsOn, ballData, fieldPosition);
     lastMotorsOn = motorsOn;
+    // Serial.println(ballData.mag);
 }
