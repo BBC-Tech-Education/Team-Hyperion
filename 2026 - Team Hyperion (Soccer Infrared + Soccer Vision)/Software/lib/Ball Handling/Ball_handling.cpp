@@ -11,7 +11,7 @@ BallHandling::BallHandling()
       cooldownActive(false) {}
 
 bool BallHandling::photogate_triggered() {
-    return analogRead(PHOTOGATE_PIN) < PHOTOGATE_THRESH;
+    return analogRead(PHOTOGATE_PIN) < (photogateThresh - 75);
 }
 
 void BallHandling::init() {
@@ -29,6 +29,8 @@ void BallHandling::init() {
     delayMicroseconds(100);
     analogWriteFrequency(DRPWM, MOTOR_ANALOG_FRQ);
     run_dribbler(0.0f);
+
+    photogateThresh = analogRead(PHOTOGATE_PIN);
  
     kicks = MAX_KICKS;
     isKicking = false;

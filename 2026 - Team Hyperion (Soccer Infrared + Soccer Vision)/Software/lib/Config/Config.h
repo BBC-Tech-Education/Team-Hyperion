@@ -6,7 +6,7 @@
 #define GOAL_TRACKING 1
 #define ORBIT 1 // enables or disables Orbit
 #define SURGE 1 // enables or disables Surging
-#define LIGHT_SENSORS 1
+#define LIGHT_SENSORS 0
 #define LOCALISATION (0 && GOAL_TRACKING)
 #define CAM_BLUE_GOAL 0
 
@@ -211,7 +211,6 @@
 #define KICKER_REQUIRED_VOLT       40.0f
 #define KICKER_VOLTAGE_STABALISER  17.05498   // calibrate later
 #define KICKER_VOLTAGE_OFFSET      0.0  // calibrate later
-#define PHOTOGATE_THRESH           700        // ball held if analogRead > this
 #define DRIBBLER_SPEED 100.0f
 
 /////////////////////////////// FIELD DIMENSIONS ///////////////////////////////

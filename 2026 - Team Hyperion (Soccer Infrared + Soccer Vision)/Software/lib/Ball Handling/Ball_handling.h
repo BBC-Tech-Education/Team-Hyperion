@@ -16,6 +16,8 @@ public:
     bool photogate_triggered();
     bool can_kick();
     uint8_t get_current_kicks() { return kicks; };
+
+    uint16_t photogateThresh = 0;
    
 private:
     void update_caps_led();

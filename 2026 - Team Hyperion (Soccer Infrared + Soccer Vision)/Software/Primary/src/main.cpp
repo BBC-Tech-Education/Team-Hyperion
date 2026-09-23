@@ -239,6 +239,7 @@ void run_attack() {
             ? fabsf(normaliseAngle180(float_mod(attackGoal.arg, 360.0f)))
             : fabsf(normaliseAngle180(bearing));
         if (facingError <= 10.0f) {
+            Serial.println("gay");
             ballHandler.kick();
         }
     }
@@ -362,11 +363,12 @@ void loop() {
             ls.update();
             update_absolute_line();
  
-            if (bt.get_role()) {
+            if (true) {
                 run_attack();
             } else {
                 run_defend();
             }
+            Serial.println(analogRead(PHOTOGATE_PIN));
  
             #if DEBUG_MAIN_IMU
             Serial.printf("Bearing: %.2f\tRaw: %.2f\n", bearing, event.orientation.x);
