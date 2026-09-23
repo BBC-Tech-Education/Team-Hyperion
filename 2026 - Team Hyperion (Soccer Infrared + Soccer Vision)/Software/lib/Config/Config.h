@@ -2,10 +2,10 @@
 #define CONFIG_H
 
 /////////////////////////////////// ROBOT ID ///////////////////////////////////
-#define CONTROL 0 // control = 1, chaos = 0
+#define CONTROL 1 // control = 1, chaos = 0
 #define GOAL_TRACKING 1
 #define ORBIT 1 // enables or disables Orbit
-#define SURGE 1 // enables or disables Surging
+#define SURGE 0 // enables or disables Surging
 #define LIGHT_SENSORS 0
 #define LOCALISATION (0 && GOAL_TRACKING)
 #define CAM_BLUE_GOAL 0
@@ -65,7 +65,7 @@
     #define BALL_CLOSE_STR 75.0f //65.0f
     #define DRIBBLER_STR_THRESH 75.0f
     #define DRIBBLER_SPEED 200.0f
-    #define BALL_FRONT_MIN 35.0f //35.0f
+    #define BALL_FRONT_MIN 30.0f //35.0f
     #define BALL_FRONT_MAX 330.f //345.0f
     #define ORBIT_TARGET_OFFSET 45.0f
     #define ORBIT_DIR_MULTI 1.20636f //0.4f

@@ -4,8 +4,8 @@ import time
 from pyb import UART
 
 widSize = 480
-robot = False # control true, chaos false
-draw = False
+robot = True # control true, chaos false
+draw = True
 
 if robot:
     CENTER_X = widSize // 2 + 5

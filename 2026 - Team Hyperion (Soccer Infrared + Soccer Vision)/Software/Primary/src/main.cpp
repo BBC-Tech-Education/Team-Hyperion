@@ -185,7 +185,7 @@ void orbit(float &mDir, float &mSpd) {
     float ballAngDiff = (dir > 0.0f ? 1.0f : -1.0f) * fmin(90.0f, 0.000000309786f*pow(dir, 4) + 0.0000534514f*pow(dir, 3) + 0.0163822f*dir*dir - 0.00204537f*dir + 10.0f);
     float distMulti = 0.8f;
     float angleAddition = distMulti * ballAngDiff;
- 
+
     #if SURGE
     surgeTimer--;
     if (((absBallDir < BALL_FRONT_MIN || absBallDir > BALL_FRONT_MAX) && (relBallStr < BALL_STR_CLOSE_THRESH))) {
@@ -210,6 +210,10 @@ void run_attack() {
     float moveDir = 0.0f;
     float moveSpd = 0.0f;
     float moveCor = 0.0f;
+
+    Serial.print(relBallDir);
+    Serial.print("\t");
+    Serial.println(relBallStr);
  
     if (relBallStr != 0.0f) {
         localiseTimer.update();
@@ -234,14 +238,17 @@ void run_attack() {
  
     line_avoid(moveDir, moveSpd);
 
-    if (onField) {
-        float facingError = (attackGoal.exists() && GOAL_TRACKING)
-            ? fabsf(normaliseAngle180(float_mod(attackGoal.arg, 360.0f)))
-            : fabsf(normaliseAngle180(bearing));
-        if (facingError <= 10.0f) {
-            Serial.println("gay");
-            ballHandler.kick();
-        }
+    // if (onField) {
+    //     float facingError = (attackGoal.exists() && GOAL_TRACKING)
+    //         ? fabsf(normaliseAngle180(float_mod(attackGoal.arg, 360.0f)))
+    //         : fabsf(normaliseAngle180(bearing));
+    //     if (facingError <= 10.0f) {
+    //         // Serial.println("gay");
+    //         ballHandler.kick();
+    //     }
+    // }
+    if(onField) {
+        ballHandler.kick();
     }
  
     if (attackGoal.exists() && GOAL_TRACKING) {
@@ -371,7 +378,6 @@ void loop() {
             } else {
                 run_defend();
             }
-            Serial.println(analogRead(PHOTOGATE_PIN));
  
             #if DEBUG_MAIN_IMU
             Serial.printf("Bearing: %.2f\tRaw: %.2f\n", bearing, event.orientation.x);

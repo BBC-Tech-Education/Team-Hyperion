@@ -99,7 +99,7 @@ void Camera::calculate_position() {
 float Camera::px_to_mm(float mag) {
     #if CONTROL
     // old mirror px->mm
-    return 0;
+    return mag;
     #else
     // new mirror px->mm
     return 15.86018 * pow(1.0433,mag) + 50;
