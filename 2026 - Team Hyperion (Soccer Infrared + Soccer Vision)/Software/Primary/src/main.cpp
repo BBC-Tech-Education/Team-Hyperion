@@ -195,21 +195,26 @@ void orbit(float &mDir, float &mSpd) {
 
     #if SURGE
     surgeTimer--;
-    if ((((absBallDir < BALL_FRONT_MIN && absBallDir > BALL_FRONT_MAX) && (relBallStr < BALL_STR_CLOSE_THRESH)) || ballHandler.photogate_triggered())) {
+    // if ((((absBallDir < BALL_FRONT_MIN && absBallDir > BALL_FRONT_MAX) && (relBallStr < BALL_STR_CLOSE_THRESH)) || ballHandler.photogate_triggered())) {
+    //     mDir = 0.0f;
+    //     mSpd = SURGE_SPEED + 70.0f;
+    //     surgeTimer = 25;
+    // } else if (surgeTimer > 0) {
+    //     mDir = 0.0f;
+    //     mSpd = SURGE_SPEED + 70.0f;
+    // } else {
+    //     mDir = float_mod(absBallDir + angleAddition, 360.0f);
+    // }
+    if((((absBallDir < BALL_FRONT_MIN && absBallDir > BALL_FRONT_MAX) && (relBallStr < BALL_STR_CLOSE_THRESH)) || ballHandler.photogate_triggered())) {
         mDir = 0.0f;
-        mSpd = SURGE_SPEED + 70.0f;
-        surgeTimer = 25;
-    } else if (surgeTimer > 0) {
-        mDir = 0.0f;
-        mSpd = SURGE_SPEED + 70.0f;
+        mSpd = SURGE_SPEED;
     } else {
         mDir = float_mod(absBallDir + angleAddition, 360.0f);
+        mSpd = BASE_SPEED + (SURGE_SPEED - BASE_SPEED) * (1.0f - fabs(angleAddition / 90.0f));
     }
     #else
     mDir = float_mod(absBallDir + angleAddition, 360.0f);
     #endif
- 
-    mSpd = BASE_SPEED + (SURGE_SPEED - BASE_SPEED) * (1.0f - fabs(angleAddition / 90.0f));
     #endif
 }
  
