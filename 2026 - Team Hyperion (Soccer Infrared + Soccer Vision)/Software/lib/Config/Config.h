@@ -71,6 +71,7 @@
     #define ORBIT_DIR_EXP 0.0660224f //0.25f
     #define ORBIT_DIST_MULTI 12.41625f
     #define ORBIT_DIST_EXP -14.56002f
+    #define GOAL_DIST_FOR_KICKER_ENABLE 70.0f
 
     #define DEFEND_CAM_TARGET 70.0
     #define DEFEND_MAX_DIST 465.07
@@ -105,6 +106,7 @@
     #define ORBIT_DIR_EXP 0.0660224f //0.25f
     #define ORBIT_DIST_MULTI 1//12.41625f / 4.0f
     #define ORBIT_DIST_EXP 1//-14.56002f
+    #define GOAL_DIST_FOR_KICKER_ENABLE 70.0f
 
     #define DEFEND_CAM_TARGET 84.0f
     #define DEFEND_MAX_DIST 97.0f

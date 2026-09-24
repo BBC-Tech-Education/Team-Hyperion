@@ -243,17 +243,12 @@ void run_attack() {
  
     line_avoid(moveDir, moveSpd);
 
-    // if robot on field
-    // if robot facing goal
-    // if ball exists, if ball is infront of robot
-    // if mag is less than 40, dont kick
-
     if (onField) {
         float facingError = (attackGoal.exists() && GOAL_TRACKING)
             ? fabsf(normaliseAngle180(float_mod(attackGoal.arg, 360.0f)))
             : fabsf(normaliseAngle180(bearing));
         if (facingError <= 15.0f) {
-            if(attackGoal.mag > 70.0) {
+            if(attackGoal.mag > GOAL_DIST_FOR_KICKER_ENABLE) {
                 if(ballData.exists()) {
                     if((ballData.arg < BALL_FRONT_MIN && ballData.arg > BALL_FRONT_MAX)) {
                         ballHandler.kick();
