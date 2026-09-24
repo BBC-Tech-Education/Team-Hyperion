@@ -8,12 +8,12 @@ robot = True # control true, chaos false
 draw = True
 
 if robot:
-    CENTER_X = widSize // 2 + 5
+    CENTER_X = widSize // 2 + 2
     CENTER_Y = widSize // 2 - 40
     MAX_RADIUS = 180
-    MIN_RADIUS = 53
-    INNER_CX = CENTER_X - 3
-    INNER_CY = CENTER_Y - 0
+    MIN_RADIUS = 40
+    INNER_CX = CENTER_X - 10
+    INNER_CY = CENTER_Y
 else:
     CENTER_X = widSize // 2 + 2 # 18
     CENTER_Y = widSize // 2 - 32
@@ -37,12 +37,13 @@ sensor.set_auto_exposure(False, exposure_us=8000)
 
 uart = UART(3, 115200, timeout_char=100)
 
+#blue, yellow
 if robot:
-    goal_thresholds = [(25, 32, -128, 127, -128, -18), (29, 100, -11, 22, 24, 127)]
-    ball_threshold = [(0, 100, 31, 127, 24, 127)]#[(42, 100, -128, 127, 36, 127)]
+    goal_thresholds = [(29, 50, -128, 127, -128, -18), (27, 100, -4, 127, 19, 127)]
+    ball_threshold = [(33, 100, 39, 127, 42, 127)]
 else:
-    goal_thresholds = [(26, 35, -9, 10, -128, -13), (0, 100, -128, 127, 26, 38)]
-    ball_threshold = [(42, 100, 48, 127, 24, 127)]
+    goal_thresholds = [(31, 44, -128, 18, -128, -19), (43, 59, -9, 127, 18, 127)]
+    ball_threshold = [(44, 100, 34, 127, 37, 127)]
 
 ROI_SIZE_BALL = 75
 ROI_SIZE_GOAL = 120
@@ -65,11 +66,19 @@ clock = time.clock()
 def in_valid_zone(blob):
     dx = blob.cx() - INNER_CX
     dy = blob.cy() - INNER_CY
-    if dx * dx + dy * dy <= MIN_RADIUS_SQ:
+    dist_sq = dx * dx + dy * dy
+
+    half_w = blob.w() // 2
+    half_h = blob.h() // 2
+    max_blob_radius = max(half_w, half_h)
+
+    effective_min_radius = max(0, MIN_RADIUS - max_blob_radius)
+    if dist_sq <= (effective_min_radius * effective_min_radius):
         return False
-    dx = blob.cx() - CENTER_X
-    dy = blob.cy() - CENTER_Y
-    return dx * dx + dy * dy < MAX_RADIUS_SQ
+
+    dx_outer = blob.cx() - CENTER_X
+    dy_outer = blob.cy() - CENTER_Y
+    return (dx_outer * dx_outer + dy_outer * dy_outer) < MAX_RADIUS_SQ
 
 
 def to_mirror(cx, cy):
@@ -78,6 +87,11 @@ def to_mirror(cx, cy):
 
 def get_roi(last_x, last_y, roi_size, lost_count):
     if lost_count < MAX_LOST_FRAMES:
+        dx = last_x - INNER_CX
+        dy = last_y - INNER_CY
+        if dx * dx + dy * dy < (MIN_RADIUS + roi_size // 2) ** 2:
+            return (0, 0, widSize, widSize)
+
         x = max(0, last_x - roi_size // 2)
         y = max(0, last_y - roi_size // 2)
         return (x, y, min(roi_size, widSize - x), min(roi_size, widSize - y))
@@ -143,6 +157,7 @@ while True:
             img.draw_line(CENTER_X, CENTER_Y, blob.cx(), blob.cy(), color=(255, 165, 0), thickness=2)
     else:
         lost_ball_count += 1
+        data[2] = [488, 488]  # Explicitly maintain sentinel value when ball is lost
 
     if draw:
         img.draw_circle(CENTER_X, CENTER_Y, MAX_RADIUS, color=(255, 255, 255), thickness=2)

@@ -184,7 +184,7 @@ void orbit(float &mDir, float &mSpd) {
     #if CONTROL
     float dir = normaliseAngle180(float_mod(absBallDir - orbitTarget, 360.0f));
     float ballAngDiff = (dir > 0.0f ? 1.0f : -1.0f) * fmin(90.0f, 0.000000309786f*pow(dir, 4) + 0.0000534514f*pow(dir, 3) + 0.0163822f*dir*dir - 0.00204537f*dir + 10.0f);
-    float distMulti = 0.8f;
+    float distMulti = 0.3f;
     float angleAddition = distMulti * ballAngDiff;
     #else
     float dir = normaliseAngle180(float_mod(absBallDir - orbitTarget, 360.0f));
@@ -195,10 +195,10 @@ void orbit(float &mDir, float &mSpd) {
 
     #if SURGE
     surgeTimer--;
-    if (((absBallDir < BALL_FRONT_MIN || absBallDir > BALL_FRONT_MAX) && (relBallStr < BALL_STR_CLOSE_THRESH))) {
+    if ((((absBallDir < BALL_FRONT_MIN && absBallDir > BALL_FRONT_MAX) && (relBallStr < BALL_STR_CLOSE_THRESH)) || ballHandler.photogate_triggered())) {
         mDir = 0.0f;
         mSpd = SURGE_SPEED + 70.0f;
-        surgeTimer = 100;
+        surgeTimer = 25;
     } else if (surgeTimer > 0) {
         mDir = 0.0f;
         mSpd = SURGE_SPEED + 70.0f;
@@ -222,7 +222,7 @@ void run_attack() {
     Serial.print("\t");
     Serial.println(relBallStr);
  
-    if (relBallStr != 0.0f) {
+    if (relBallStr != 0.0f || ballHandler.photogate_triggered()) {
         localiseTimer.update();
         orbit(moveDir, moveSpd);
     } else {
@@ -245,17 +245,13 @@ void run_attack() {
  
     line_avoid(moveDir, moveSpd);
 
-    // if (onField) {
-    //     float facingError = (attackGoal.exists() && GOAL_TRACKING)
-    //         ? fabsf(normaliseAngle180(float_mod(attackGoal.arg, 360.0f)))
-    //         : fabsf(normaliseAngle180(bearing));
-    //     if (facingError <= 10.0f) {
-    //         // Serial.println("gay");
-    //         ballHandler.kick();
-    //     }
-    // }
-    if(onField) {
-        ballHandler.kick();
+    if (onField) {
+        float facingError = (attackGoal.exists() && GOAL_TRACKING)
+            ? fabsf(normaliseAngle180(float_mod(attackGoal.arg, 360.0f)))
+            : fabsf(normaliseAngle180(bearing));
+        if (facingError <= 15.0f) {
+            ballHandler.kick();
+        }
     }
  
     if (attackGoal.exists() && GOAL_TRACKING) {
