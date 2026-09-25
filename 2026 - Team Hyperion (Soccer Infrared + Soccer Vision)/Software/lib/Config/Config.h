@@ -120,7 +120,7 @@
     #define KD_GOALT_DEF 0.04
     #define KP_HOZT 1.5
     #define KP_CVERT 12.5 / 12.0
-    #define KP_LOC 0.3f
+    #define KP_LOC 0.2f
     #define KD_LOC 0.0
     #define KP_LAV 100.0
     #define KD_LAV 0.0
@@ -215,7 +215,7 @@
 #define DRIBBLER_SPEED 100.0f
 
 /////////////////////////////// FIELD DIMENSIONS ///////////////////////////////
-#define FIELD_LENGTH_MM 1400
+#define FIELD_LENGTH_MM 1700
 
 
 #endif
