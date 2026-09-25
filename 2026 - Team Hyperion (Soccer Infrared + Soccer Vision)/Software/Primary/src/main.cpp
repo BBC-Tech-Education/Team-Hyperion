@@ -75,17 +75,25 @@ Vect otherBallData;
  
  
 /////////////////////////////////// FUNCTIONS /////////////////////////////////
+
+Vect absoluteVector(Vect v) {
+    if(v.exists()) {
+        return Vect(v.mag, float_mod(bearing + v.arg, 360.0f), true);
+    } else {
+        return Vect(0.0f, 0.0f, true);
+    }
+}
  
 void update_field_vectors() {
     otherFieldPosition = bt.get_other_pos();
     otherBallData = bt.get_other_ball();
 
-    Vect globalAttack = attackGoal.to_bearing(bearing);
-    Vect globalDefend = defendGoal.to_bearing(bearing);
-    Vect globalBall   = ballData.to_bearing(bearing);
+    Vect globalAttack = absoluteVector(attackGoal);
+    Vect globalDefend = absoluteVector(defendGoal);
+    Vect globalBall = absoluteVector(ballData);
 
-    Vect attackGoalPos(0.0f, FIELD_LENGTH_MM / 2.0f);
-    Vect defendGoalPos(0.0f, -FIELD_LENGTH_MM / 2.0f);
+    Vect attackGoalPos(FIELD_LENGTH_MM / 2.0f, 0.0f, true);
+    Vect defendGoalPos(-FIELD_LENGTH_MM / 2.0f, 0.0f, true);
 
     if (attackGoal.exists() && defendGoal.exists()) {
         Vect posFromAttack = attackGoalPos - globalAttack;
@@ -93,46 +101,41 @@ void update_field_vectors() {
         fieldPosition = (posFromAttack + posFromDefend) / 2.0f;
     } 
     else if (attackGoal.exists()) {
-        fieldPosition = attackGoalPos - globalAttack;
+        fieldPosition = globalAttack - attackGoalPos;
     } 
     else if (defendGoal.exists()) {
-        fieldPosition = defendGoalPos - globalDefend;
+        fieldPosition = globalDefend - defendGoalPos;
     } 
     else {
         fieldPosition = Vect(0.0f, 0.0f, false);
     }
+    // bool hasRobotPos  = fieldPosition.exists();
+    // bool hasRobotBall = ballData.exists();
+    // bool hasOtherPos  = otherFieldPosition.exists();
+    // bool hasOtherBall = otherBallData.exists();
 
-    bool hasRobotPos  = fieldPosition.exists();
-    bool hasRobotBall = ballData.exists();
-    bool hasOtherPos  = otherFieldPosition.exists();
-    bool hasOtherBall = otherBallData.exists();
+    // int knownCount = (int)hasRobotPos + (int)hasRobotBall + (int)hasOtherPos + (int)hasOtherBall;
 
-    int knownCount = (int)hasRobotPos + (int)hasRobotBall + (int)hasOtherPos + (int)hasOtherBall;
+    // if (knownCount == 3) {
+    //     if (!hasRobotPos) {
+    //         fieldPosition = otherFieldPosition + otherBallData - globalBall;
+    //     } else if (!hasRobotBall) {
+    //         // Reconstruct ball vector in local frame from field positions
+    //         Vect globalBallCalc = otherFieldPosition + otherBallData - fieldPosition;
+    //         ballData = globalBallCalc.to_bearing(-bearing); 
+    //     } else if (!hasOtherPos) {
+    //         otherFieldPosition = fieldPosition + globalBall - otherBallData;
+    //     } else if (!hasOtherBall) {
+    //         otherBallData = fieldPosition + globalBall - otherFieldPosition;
+    //     }
+    // } else if (!fieldPosition.exists()) {
+    //     fieldPosition = Vect(0.0f, 0.0f, false);
+    // }
 
-    if (knownCount == 3) {
-        if (!hasRobotPos) {
-            fieldPosition = otherFieldPosition + otherBallData - globalBall;
-        } else if (!hasRobotBall) {
-            // Reconstruct ball vector in local frame from field positions
-            Vect globalBallCalc = otherFieldPosition + otherBallData - fieldPosition;
-            ballData = globalBallCalc.to_bearing(-bearing); 
-        } else if (!hasOtherPos) {
-            otherFieldPosition = fieldPosition + globalBall - otherBallData;
-        } else if (!hasOtherBall) {
-            otherBallData = fieldPosition + globalBall - otherFieldPosition;
-        }
-    } else if (!fieldPosition.exists()) {
-        fieldPosition = Vect(0.0f, 0.0f, false);
-    }
-
-    Serial.print("Field Position -> Arg: ");
-    Serial.print(fieldPosition.arg);
-    Serial.print("\tMag: ");
-    Serial.println(fieldPosition.mag);
-}
- 
-Vect move_to(Vect targetPosition) {
-    return targetPosition - fieldPosition;
+    // Serial.print("Field Position -> Arg: ");
+    // Serial.print(fieldPosition.arg);
+    // Serial.print("\tMag: ");
+    // Serial.println(fieldPosition.mag);
 }
  
 void update_absolute_line() {
@@ -246,16 +249,16 @@ void run_attack() {
         orbit(moveDir, moveSpd);
     } else {
         #if LOCALISATION
-        if (localiseTimer.time_has_passed_no_update()) {
-            Vect targetVector(0.0f, 0.0f, false);
-            Vect moveVector = move_to(targetVector);
-            moveVector = moveVector.to_bearing();
-            moveDir = moveVector.arg;
-            moveSpd = fabs(localise.update(moveVector.mag, 0.0f));
-        } else {
-            moveDir = 0.0f;
-            moveSpd = 0.0f;
-        }
+        // if (localiseTimer.time_has_passed_no_update()) {
+        //     moveDir = fieldPosition.arg;
+        //     moveSpd = localise.update(fieldPosition.mag, 0.0f);
+        // } else {
+        //     moveDir = 0.0f;
+        //     moveSpd = 0.0f;
+        // }
+        moveDir = fieldPosition.arg;
+        moveSpd = fabs(localise.update(fieldPosition.mag, 0.0f));
+        Serial.println(moveSpd);
         #else
         moveDir = 0.0f;
         moveSpd = 0.0f;

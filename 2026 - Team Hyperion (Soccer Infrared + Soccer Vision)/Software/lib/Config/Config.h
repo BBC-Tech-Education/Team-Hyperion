@@ -7,7 +7,7 @@
 #define ORBIT 1 // enables or disables Orbit
 #define SURGE 1// enables or disables Surging
 #define LIGHT_SENSORS 1
-#define LOCALISATION (0 && GOAL_TRACKING)
+#define LOCALISATION (1 && GOAL_TRACKING)
 #define CAM_BLUE_GOAL 0
 
 //////////////////////////////////// DEBUG ////////////////////////////////////
@@ -120,7 +120,7 @@
     #define KD_GOALT_DEF 0.04
     #define KP_HOZT 1.5
     #define KP_CVERT 12.5 / 12.0
-    #define KP_LOC 3.0f
+    #define KP_LOC 0.3f
     #define KD_LOC 0.0
     #define KP_LAV 100.0
     #define KD_LAV 0.0
@@ -205,7 +205,7 @@
 
 /////////////////////////////// BALL HANDLING /////////////////////////////////
 
-#define KICK_PULSE_US              300000UL    // pin LOW duration (us)
+#define KICK_PULSE_US              50000UL    // pin LOW duration (us)
 #define KICK_RECHARGE_US           20000000UL  // +1 kick every this many us
 #define KICK_COOLDOWN_US           5000000UL   // after pulse ends (us)
 #define MAX_KICKS                  5
@@ -215,7 +215,7 @@
 #define DRIBBLER_SPEED 100.0f
 
 /////////////////////////////// FIELD DIMENSIONS ///////////////////////////////
-#define FIELD_LENGTH_MM 2400
+#define FIELD_LENGTH_MM 1400
 
 
 #endif
