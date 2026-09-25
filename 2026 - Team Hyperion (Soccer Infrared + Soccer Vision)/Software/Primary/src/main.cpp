@@ -83,7 +83,9 @@ void update_field_vectors() {
     if (attackGoal.exists() && defendGoal.exists()) {
         fieldPosition = ((attackGoal + defendGoal) * -1.0) / 2.0;
     } else if (attackGoal.exists() || defendGoal.exists()) {
+        Vect centerYDistance(0.0f, FIELD_LENGTH_MM / 2, false);
         Vect centerOffset(((attackGoal.exists() ? -1.0 : 1.0) * FIELD_LENGTH_MM) / 2.0, false);
+        fieldPosition = 
         fieldPosition = centerOffset - attackGoal;
     } else {
         fieldPosition = Vect(0.0f, 0.0f, false);
@@ -387,6 +389,10 @@ void loop() {
             } else {
                 run_defend();
             }
+
+            Serial.print(fieldPosition.arg);
+            Serial.print("\t");
+            Serial.println(fieldPosition.mag);
  
             #if DEBUG_MAIN_IMU
             Serial.printf("Bearing: %.2f\tRaw: %.2f\n", bearing, event.orientation.x);

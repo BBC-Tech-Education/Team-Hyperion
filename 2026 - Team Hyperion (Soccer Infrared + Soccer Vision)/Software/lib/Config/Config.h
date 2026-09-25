@@ -2,8 +2,8 @@
 #define CONFIG_H
 
 /////////////////////////////////// ROBOT ID ///////////////////////////////////
-#define CONTROL 1 // control = 1, chaos = 0
-#define GOAL_TRACKING 1 
+#define CONTROL 0 // control = 1, chaos = 0
+#define GOAL_TRACKING 1
 #define ORBIT 1 // enables or disables Orbit
 #define SURGE 1// enables or disables Surging
 #define LIGHT_SENSORS 1
@@ -59,8 +59,8 @@
 
 #if CONTROL
 //CONTROL
-    #define BASE_SPEED 90.0f //110.0f
-    #define SURGE_SPEED 110.0f //130.0f
+    #define BASE_SPEED 70.0f //110.0f
+    #define SURGE_SPEED 90.0f //130.0f
     #define BALL_STR_CLOSE_THRESH 50.0f //20.0f
     #define BALL_CLOSE_STR 75.0f //65.0f
     #define DRIBBLER_STR_THRESH 75.0f

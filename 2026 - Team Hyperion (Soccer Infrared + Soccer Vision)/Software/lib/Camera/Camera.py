@@ -4,12 +4,12 @@ import time
 from pyb import UART
 
 widSize = 480
-robot = True # control true, chaos false
+robot = False # control true, chaos false
 draw = True
 
 if robot:
-    CENTER_X = widSize // 2 + 2
-    CENTER_Y = widSize // 2 - 40
+    CENTER_X = widSize // 2 - 17
+    CENTER_Y = widSize // 2 - 42
     MAX_RADIUS = 180
     MIN_RADIUS = 40
     INNER_CX = CENTER_X - 10
@@ -17,7 +17,7 @@ if robot:
 else:
     CENTER_X = widSize // 2 + 2 # 18
     CENTER_Y = widSize // 2 - 32
-    MAX_RADIUS = 205
+    MAX_RADIUS = 200
     MIN_RADIUS = 67
     INNER_CX = CENTER_X - 3
     INNER_CY = CENTER_Y - 5
@@ -42,7 +42,7 @@ if robot:
     goal_thresholds = [(29, 50, -128, 127, -128, -18), (27, 100, -4, 127, 19, 127)]
     ball_threshold = [(33, 100, 39, 127, 42, 127)]
 else:
-    goal_thresholds = [(31, 44, -128, 18, -128, -19), (43, 59, -9, 127, 18, 127)]
+    goal_thresholds = [(34, 56, -128, 127, -128, -26), (32, 57, -10, 29, 21, 127)]
     ball_threshold = [(44, 100, 34, 127, 37, 127)]
 
 ROI_SIZE_BALL = 75
