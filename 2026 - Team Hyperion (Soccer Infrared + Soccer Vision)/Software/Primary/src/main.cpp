@@ -220,7 +220,7 @@ void orbit(float &mDir, float &mSpd) {
     #endif
     #endif
 }
- 
+
 void run_attack() {
     float moveDir = 0.0f;
     float moveSpd = 0.0f;
@@ -231,13 +231,6 @@ void run_attack() {
         orbit(moveDir, moveSpd);
     } else {
         #if LOCALISATION
-        // if (localiseTimer.time_has_passed_no_update()) {
-        //     moveDir = fieldPosition.arg;
-        //     moveSpd = localise.update(fieldPosition.mag, 0.0f);
-        // } else {
-        //     moveDir = 0.0f;
-        //     moveSpd = 0.0f;
-        // }
         moveDir = float_mod(fieldPosition.arg + 180.0f, 360.0f);
         moveSpd = fabs(localise.update(fieldPosition.mag, 0.0f));
         #else
@@ -387,37 +380,16 @@ void loop() {
             ls.update();
             update_absolute_line();
  
-            if (true) {
+            if (bt.get_role()) {
                 run_attack();
             } else {
                 run_defend();
             }
- 
-            #if DEBUG_MAIN_IMU
-            Serial.printf("Bearing: %.2f\tRaw: %.2f\n", bearing, event.orientation.x);
-            #endif
- 
-            #if DEBUG_MAIN_GOALS
-            Serial.printf("Attack Ang: %.2f\tAttack Dist: %.2f\tAttack Vis: %d\n",
-                          attackGoal.arg, attackGoal.mag, attackGoal.exists());
-            Serial.printf("Defend Ang: %.2f\tDefend Dist: %.2f\tDefend Vis: %d\n",
-                          defendGoal.arg, defendGoal.mag, defendGoal.exists());
-            #endif
- 
-            #if DEBUG_MAIN_LINE
-            Serial.printf("Rel Ang: %.2f\tRel Size: %.2f\n", relLineAngle, relLineSize);
-            Serial.printf("Abs Ang: %.2f\tAbs Size: %.2f\tOn Field: %d\n",
-                          absLineAngle, absLineSize, onField);
-            #endif
- 
-            #if DEBUG_MAIN
-            Serial.println();
-            #endif
             break;
         }
     };
  
     ballHandler.update(relBallStr);
-    bt.update(motorsOn, ballData, fieldPosition);
+    bt.update(motorsOn, ballData, fieldPosition, ballHandler.kicker_ready());
     lastMotorsOn = motorsOn;
 }

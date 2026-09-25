@@ -14,6 +14,7 @@ public:
     void update(float ballStr = 0.0f);
     void kick();
     bool photogate_triggered();
+    bool kicker_ready();
     bool can_kick();
     uint8_t get_current_kicks() { return kicks; };
 

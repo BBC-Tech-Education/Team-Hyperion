@@ -5,7 +5,7 @@ void Bluetooth::init() {
     connectedTimer.update();
 }
 
-void Bluetooth::update(bool enabled, Vect ball, Vect pos) {
+void Bluetooth::update(bool enabled, Vect ball, Vect pos, bool kickerReady) {
     self.enabled = enabled;
 
     int16_t iComponent = ball.i;
@@ -22,7 +22,7 @@ void Bluetooth::update(bool enabled, Vect ball, Vect pos) {
     read();
 
     connected = !connectedTimer.time_has_passed_no_update();
-    calculate_role();
+    calculate_role(kickerReady);
 }
 
 void Bluetooth::read() {
@@ -54,7 +54,7 @@ bool Bluetooth::defender_can_steal(Vect defenderBall) {
         && defenderBall.mag < SWITCHING_STRENGTH;
 }
 
-void Bluetooth::calculate_role() {    
+void Bluetooth::calculate_role(bool kickerReady) {    
     if (!self.enabled) {
         self.role = true; // Attacker
         return;
@@ -69,6 +69,10 @@ void Bluetooth::calculate_role() {
         if (switchTimer.time_has_passed_no_update()) {
             Vect defenderBall = self.role ? other.ball : self.ball;
             if (defender_can_steal(defenderBall)) {
+                bool becomingAttacker = !self.role;
+                if (becomingAttacker && kickerReady) {
+                    return;
+                }
                 self.role = !self.role;
                 switchTimer.update();
             }
