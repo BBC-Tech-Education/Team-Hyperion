@@ -97,7 +97,7 @@ void update_field_vectors() {
     } else if (attackGoal.exists() || defendGoal.exists()) {
         Vect centerYDistance(FIELD_LENGTH_MM / 2, 90.0f, true);
         if(attackGoal.exists()) {
-            fieldPosition = attackGoal - centerYDistance;
+            fieldPosition = centerYDistance - attackGoal;
         } else {
             Vect tempGoal = defendGoal;
             float defendMag = tempGoal.mag;

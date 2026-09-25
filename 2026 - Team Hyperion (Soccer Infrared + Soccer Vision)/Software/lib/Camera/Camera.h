@@ -28,9 +28,7 @@ private:
 
     void read();
     void calculate_position();
-
     void px_to_mm(Vect &v);
-    
 };
 
 #endif
