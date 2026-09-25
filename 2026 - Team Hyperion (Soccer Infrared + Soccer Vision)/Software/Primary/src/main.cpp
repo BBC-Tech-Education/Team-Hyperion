@@ -80,16 +80,38 @@ void update_field_vectors() {
     otherFieldPosition = bt.get_other_pos();
     otherBallData = bt.get_other_ball();
 
+    Serial.print(attackGoal.exists());
+    Serial.print("\t");
+    Serial.print(defendGoal.exists());
+    Serial.print("\t");
+    Serial.print(defendGoal.arg);
+    Serial.print("\t");
+    Serial.print(defendGoal.mag);
+    Serial.print("\t");
+    Serial.print(attackGoal.arg);
+    Serial.print("\t");
+    Serial.print(attackGoal.mag);
+    Serial.print("\t");
     if (attackGoal.exists() && defendGoal.exists()) {
         fieldPosition = ((attackGoal + defendGoal) * -1.0) / 2.0;
     } else if (attackGoal.exists() || defendGoal.exists()) {
-        Vect centerYDistance(0.0f, FIELD_LENGTH_MM / 2, false);
-        Vect centerOffset(((attackGoal.exists() ? -1.0 : 1.0) * FIELD_LENGTH_MM) / 2.0, false);
-        fieldPosition = 
-        fieldPosition = centerOffset - attackGoal;
+        Vect centerYDistance(FIELD_LENGTH_MM / 2, 90.0f, true);
+        if(attackGoal.exists()) {
+            fieldPosition = attackGoal - centerYDistance;
+        } else {
+            Vect tempGoal = defendGoal;
+            float defendMag = tempGoal.mag;
+            float defendArg = tempGoal.arg;
+            tempGoal.setPolar(-tempGoal.mag, tempGoal.arg);
+            fieldPosition = tempGoal - centerYDistance; 
+        }
     } else {
         fieldPosition = Vect(0.0f, 0.0f, false);
     }
+    Serial.print(fieldPosition.arg);
+    Serial.print("\t");
+    Serial.print(fieldPosition.mag);
+    Serial.println();
 
     bool hasRobotPos = fieldPosition.exists();
     bool hasRobotBall = ballData.exists();
@@ -389,10 +411,6 @@ void loop() {
             } else {
                 run_defend();
             }
-
-            Serial.print(fieldPosition.arg);
-            Serial.print("\t");
-            Serial.println(fieldPosition.mag);
  
             #if DEBUG_MAIN_IMU
             Serial.printf("Bearing: %.2f\tRaw: %.2f\n", bearing, event.orientation.x);

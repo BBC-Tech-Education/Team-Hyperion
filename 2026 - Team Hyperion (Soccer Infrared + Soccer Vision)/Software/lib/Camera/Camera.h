@@ -29,7 +29,7 @@ private:
     void read();
     void calculate_position();
 
-    float px_to_mm(float mag);
+    void px_to_mm(Vect &v);
     
 };
 

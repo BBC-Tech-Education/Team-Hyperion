@@ -51,17 +51,9 @@ void Camera::update() {
         if (b1 == CAM_START_BYTE_1 && b2 == CAM_START_BYTE_2) {
             CAM_SERIAL.read();
             read();
-            float px = px_to_mm(blue.mag);
-            float arg = blue.arg;
-            blue.setPolar(px, arg);
-
-            px = px_to_mm(yellow.mag);
-            arg = yellow.arg;
-            yellow.setPolar(px, arg);
-
-            px = px_to_mm(ball.mag);
-            arg = ball.arg;
-            ball.setPolar(px, arg);
+            px_to_mm(blue);
+            px_to_mm(yellow);
+            px_to_mm(ball);
 
             if (digitalRead(GOAL_TRACK_SWITCH)) {
                 attack = blue;
@@ -96,12 +88,19 @@ void Camera::calculate_position() {
     }
 }
 
-float Camera::px_to_mm(float mag) {
-    #if CONTROL
-    // old mirror px->mm
-    return mag;
-    #else
-    // new mirror px->mm
-    return 15.86018 * pow(1.0433,mag) + 50;
-    #endif
+void Camera::px_to_mm(Vect &v) {
+    float arg = v.arg;
+    float mm = 0.0f;
+
+    if(v.mag != 0.0f) {
+        #if CONTROL
+        // old mirror px->mm
+        mm = v.mag;
+        #else
+        // new mirror px->mm
+        mm = 15.86018 * pow(1.0433,v.mag) + 50;
+        #endif
+    }
+
+    v.setPolar(mm, arg);
 }
