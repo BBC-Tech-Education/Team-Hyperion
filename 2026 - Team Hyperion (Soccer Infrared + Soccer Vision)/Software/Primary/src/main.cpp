@@ -104,17 +104,17 @@ void update_field_vectors() {
         fieldPosition = (posFromAttack + posFromDefend) / 2.0f;
     } else if (hasAttack) {
         fieldPosition = attackGoalPos - globalAttack;
-        Serial.print(fieldPosition.arg);
-        Serial.print("\t");
-        Serial.print(fieldPosition.mag);
-        Serial.println("\tsigma sigma boy2");
+        // Serial.print(fieldPosition.arg);
+        // Serial.print("\t");
+        // Serial.print(fieldPosition.mag);
+        // Serial.println("\tsigma sigma boy2");
     } else if (hasDefend) {
         Vect tempGoal = Vect(globalDefend.mag, float_mod(globalDefend.arg + 180.0f, 360.0f), true);
         fieldPosition = tempGoal + defendGoalPos;
-        Serial.print(fieldPosition.arg);
-        Serial.print("\t");
-        Serial.print(fieldPosition.mag);
-        Serial.println("\tsigma sigma boy");
+        // Serial.print(fieldPosition.arg);
+        // Serial.print("\t");
+        // Serial.print(fieldPosition.mag);
+        // Serial.println("\tsigma sigma boy");
     } else {
         fieldPosition = Vect(0.0f, 0.0f, false);
     }
@@ -231,15 +231,13 @@ void run_attack() {
         orbit(moveDir, moveSpd);
     } else {
         #if LOCALISATION
-        // if (localiseTimer.time_has_passed_no_update()) {
-        //     moveDir = fieldPosition.arg;
-        //     moveSpd = localise.update(fieldPosition.mag, 0.0f);
-        // } else {
-        //     moveDir = 0.0f;
-        //     moveSpd = 0.0f;
-        // }
-        moveDir = float_mod(fieldPosition.arg + 180.0f, 360.0f);
-        moveSpd = fabs(localise.update(fieldPosition.mag, 0.0f));
+        if (localiseTimer.time_has_passed_no_update()) {
+            moveDir = float_mod(fieldPosition.arg + 180.0f, 360.0f);
+            moveSpd = fabs(localise.update(fieldPosition.mag, 0.0f));
+        } else {
+            moveDir = 0.0f;
+            moveSpd = 0.0f;
+        }
         #else
         moveDir = 0.0f;
         moveSpd = 0.0f;
@@ -383,6 +381,8 @@ void loop() {
             update_field_vectors();
             relBallDir = ballData.arg;
             relBallStr = ballData.mag;
+
+            Serial.println(ballData.mag);
  
             ls.update();
             update_absolute_line();
