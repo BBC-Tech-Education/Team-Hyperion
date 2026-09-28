@@ -7,8 +7,10 @@
 #define ORBIT 1 // enables or disables Orbit
 #define SURGE 1// enables or disables Surging
 #define LIGHT_SENSORS 1
+#define GOAL_TRACKING 1
 #define LOCALISATION (1 && GOAL_TRACKING)
-#define CAM_BLUE_GOAL 0
+#define KICKER 0
+#define DRIBBLER 0
 
 //////////////////////////////////// DEBUG ////////////////////////////////////
 
@@ -42,17 +44,7 @@
 #define DEBUG_BT_ROLE 0
 #define DEBUG_BT (DEBUG_BT_RX || DEBUG_BT_TX || DEBUG_BT_ROLE)
 
-// --- Primary main loop ---
-#define DEBUG_MAIN_STATE 0
-#define DEBUG_MAIN_IMU 0
-#define DEBUG_MAIN_LINE 0
-#define DEBUG_MAIN_GOALS 0
-#define DEBUG_MAIN_ATTACK 0
-#define DEBUG_MAIN_DEFEND 0
-#define DEBUG_MAIN (DEBUG_MAIN_STATE || DEBUG_MAIN_IMU || DEBUG_MAIN_LINE || \
-                    DEBUG_MAIN_GOALS || DEBUG_MAIN_ATTACK || DEBUG_MAIN_DEFEND)
-
-#define DEBUG (DEBUG_LS || DEBUG_TSSP || DEBUG_DRIVE || DEBUG_CAM || DEBUG_BT || DEBUG_MAIN)
+#define DEBUG (DEBUG_LS || DEBUG_TSSP || DEBUG_DRIVE || DEBUG_CAM || DEBUG_BT)
 
 
 //////////////////////////////////// TUNING ////////////////////////////////////
@@ -216,6 +208,12 @@
 
 /////////////////////////////// FIELD DIMENSIONS ///////////////////////////////
 #define FIELD_LENGTH_MM 1700
+
+// Defender return after a role switch. Stay this far from the ball so the
+// new attacker can take the push, while still driving back to goal.
+#define PUSH_CLEARANCE_MM 400.0f
+#define DEFEND_RETURN_SPEED 170.0f
+#define DEFEND_RETURN_SLOW_MM 350.0f
 
 
 #endif

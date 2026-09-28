@@ -104,17 +104,9 @@ void update_field_vectors() {
         fieldPosition = (posFromAttack + posFromDefend) / 2.0f;
     } else if (hasAttack) {
         fieldPosition = attackGoalPos - globalAttack;
-        // Serial.print(fieldPosition.arg);
-        // Serial.print("\t");
-        // Serial.print(fieldPosition.mag);
-        // Serial.println("\tsigma sigma boy2");
     } else if (hasDefend) {
         Vect tempGoal = Vect(globalDefend.mag, float_mod(globalDefend.arg + 180.0f, 360.0f), true);
         fieldPosition = tempGoal + defendGoalPos;
-        // Serial.print(fieldPosition.arg);
-        // Serial.print("\t");
-        // Serial.print(fieldPosition.mag);
-        // Serial.println("\tsigma sigma boy");
     } else {
         fieldPosition = Vect(0.0f, 0.0f, false);
     }
@@ -220,7 +212,7 @@ void orbit(float &mDir, float &mSpd) {
     #endif
     #endif
 }
- 
+
 void run_attack() {
     float moveDir = 0.0f;
     float moveSpd = 0.0f;
@@ -273,13 +265,83 @@ void run_attack() {
     motors.run(moveSpd, float_mod(moveDir - bearing, 360.0f), moveCor);
 }
  
+// True when this robot is on the attack side of the ball (the push).
+// Heading home in that case goes through the ball and the new attacker,
+// so steer around a clearance circle and drive back to goal.
+bool clear_push(float &mDir, float &mSpd) {
+    if (!ballData.exists() || !(attackGoal.exists() || defendGoal.exists())) {
+        return false;
+    }
+
+    Vect ballField = fieldPosition + absoluteVector(ballData);
+    if (fieldPosition.i <= ballField.i) {
+        return false;
+    }
+
+    Vect goal(0.0f, 0.0f, false);
+    goal.setStandard(-FIELD_LENGTH_MM / 2.0f, 0.0f);
+    Vect toGoal = goal - fieldPosition;
+    Vect toBall = ballField - fieldPosition;
+    if (toGoal.mag < 1.0f) {
+        return false;
+    }
+
+    Vect desired = toGoal;
+    if (toBall.mag > 1.0f) {
+        float along = (toBall.i * toGoal.i + toBall.j * toGoal.j) / (toGoal.mag * toGoal.mag);
+        float cross = toGoal.i * toBall.j - toGoal.j * toBall.i;
+        float lineDist = fabsf(cross) / toGoal.mag;
+        bool clips = lineDist < PUSH_CLEARANCE_MM && along > 0.0f && along < 1.0f;
+        bool inside = toBall.mag < PUSH_CLEARANCE_MM;
+
+        if (clips || inside) {
+            float inv = 1.0f / toBall.mag;
+            float tx = -toBall.j * inv;
+            float ty = toBall.i * inv;
+            if (tx * toGoal.i + ty * toGoal.j < 0.0f) {
+                tx = -tx;
+                ty = -ty;
+            }
+
+            float away = inside ? (PUSH_CLEARANCE_MM - toBall.mag) / PUSH_CLEARANCE_MM : 0.0f;
+            desired.setStandard(
+                toGoal.i + (tx - toBall.i * inv * away) * toGoal.mag,
+                toGoal.j + (ty - toBall.j * inv * away) * toGoal.mag);
+            if (inside) {
+                float closing = desired.i * toBall.i + desired.j * toBall.j;
+                if (closing > 0.0f) {
+                    float scale = closing / (toBall.mag * toBall.mag);
+                    desired.setStandard(desired.i - toBall.i * scale, desired.j - toBall.j * scale);
+                }
+            }
+            if (desired.mag < 1.0f) {
+                desired.setStandard(tx, ty);
+            }
+        }
+    }
+
+    mDir = desired.arg;
+    mSpd = DEFEND_RETURN_SPEED;
+    if (toGoal.mag < DEFEND_RETURN_SLOW_MM) {
+        mSpd = fmaxf(40.0f, DEFEND_RETURN_SPEED * (toGoal.mag / DEFEND_RETURN_SLOW_MM));
+    }
+    return true;
+}
+
 void run_defend() {
     float moveDir = 0.0f;
     float moveSpd = 0.0f;
     float moveCor = 0.0f;
     bool ballBehind = relBallDir > 90.0f && relBallDir < 270.0f;
     float bearingCor = -correction.update(normaliseAngle180(bearing), 0.0);
- 
+
+    if (clear_push(moveDir, moveSpd)) {
+        moveCor = bearingCor;
+        line_avoid(moveDir, moveSpd);
+        motors.run(moveSpd, float_mod(moveDir - bearing, 360.0f), moveCor);
+        return;
+    }
+
     if(ballBehind) {
         orbit(moveDir, moveSpd);
         moveCor = bearingCor;
@@ -387,37 +449,16 @@ void loop() {
             ls.update();
             update_absolute_line();
  
-            if (true) {
+            if (bt.get_role()) {
                 run_attack();
             } else {
                 run_defend();
             }
- 
-            #if DEBUG_MAIN_IMU
-            Serial.printf("Bearing: %.2f\tRaw: %.2f\n", bearing, event.orientation.x);
-            #endif
- 
-            #if DEBUG_MAIN_GOALS
-            Serial.printf("Attack Ang: %.2f\tAttack Dist: %.2f\tAttack Vis: %d\n",
-                          attackGoal.arg, attackGoal.mag, attackGoal.exists());
-            Serial.printf("Defend Ang: %.2f\tDefend Dist: %.2f\tDefend Vis: %d\n",
-                          defendGoal.arg, defendGoal.mag, defendGoal.exists());
-            #endif
- 
-            #if DEBUG_MAIN_LINE
-            Serial.printf("Rel Ang: %.2f\tRel Size: %.2f\n", relLineAngle, relLineSize);
-            Serial.printf("Abs Ang: %.2f\tAbs Size: %.2f\tOn Field: %d\n",
-                          absLineAngle, absLineSize, onField);
-            #endif
- 
-            #if DEBUG_MAIN
-            Serial.println();
-            #endif
             break;
         }
     };
  
     ballHandler.update(relBallStr);
-    bt.update(motorsOn, ballData, fieldPosition);
+    bt.update(motorsOn, ballData, fieldPosition, ballHandler.kicker_ready());
     lastMotorsOn = motorsOn;
 }

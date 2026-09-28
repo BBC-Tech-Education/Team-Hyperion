@@ -41,14 +41,11 @@ void BallHandling::init() {
     cooldownTimer.update();
 }
  
-bool BallHandling::can_kick() {
+bool BallHandling::kicker_ready() {
     if (kicks <= 0) {
         return false;
     }
     if (kickerVd.get_lvl() < KICKER_REQUIRED_VOLT) {
-        return false;
-    }
-    if (!photogate_triggered()) {
         return false;
     }
     if (isKicking) {
@@ -58,6 +55,10 @@ bool BallHandling::can_kick() {
         return false;
     }
     return true;
+}
+
+bool BallHandling::can_kick() {
+    return kicker_ready() && photogate_triggered();
 }
  
 void BallHandling::kick() {

@@ -16,7 +16,7 @@ struct CommunicationData {
 class Bluetooth {
 public:
     void init();
-    void update(bool enabled, Vect ball, Vect pos);
+    void update(bool enabled, Vect ball, Vect pos, bool kickerReady = true);
 
     bool get_role() { return self.role; };
     Vect get_other_pos() { return other.pos; };
@@ -26,7 +26,7 @@ private:
     void read();
     void send();
     void send_vector(Vect v);
-    void calculate_role();
+    void calculate_role(bool kickerReady);
     bool defender_can_steal(Vect defenderBall);
     int16_t receive_vector_comp();
 
