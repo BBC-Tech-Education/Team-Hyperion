@@ -32,7 +32,7 @@ PID correction(KP_IMU, 0.0, KD_IMU, IMU_PID_MAX);
 PID goalTrackAttack(KP_GOALT_ATK, 0.0, KD_GOALT_ATK, GOALT_PID_MAX);
 PID goalTrackDefend(KP_GOALT_DEF, 0.0, KD_GOALT_DEF, GOALT_PID_MAX);
 PID horizontal(KP_HOZT, 0.0, 0.0);
-PID vertCam(KP_CVERT, 0.0, 0.0);
+PID vertCam(KP_CVERT, 0.0, KD_CVERT);
 PID lineAvoid(KP_LAV, 0.0, KD_LAV, LAV_PID_MAX);
 PID localise(KP_LOC, 0.0, KD_LOC, LOC_PID_MAX);
 // VOLTAGE DIVIDERS
@@ -265,83 +265,81 @@ void run_attack() {
     motors.run(moveSpd, float_mod(moveDir - bearing, 360.0f), moveCor);
 }
  
-// True when this robot is on the attack side of the ball (the push).
-// Heading home in that case goes through the ball and the new attacker,
-// so steer around a clearance circle and drive back to goal.
-bool clear_push(float &mDir, float &mSpd) {
-    if (!ballData.exists() || !(attackGoal.exists() || defendGoal.exists())) {
-        return false;
-    }
+// // // True when this robot is on the attack side of the ball (the push).
+// // // Heading home in that case goes through the ball and the new attacker,
+// // // so steer around a clearance circle and drive back to goal.
+// // bool clear_push(float &mDir, float &mSpd) {
+// //     if (!ballData.exists() || !(attackGoal.exists() || defendGoal.exists())) {
+// //         // if ball does not exist, or if attack goal not exists, or if defend goal exists
+// //         // do regular defend vectors
+// //         return false;
+// //     }
 
-    Vect ballField = fieldPosition + absoluteVector(ballData);
-    if (fieldPosition.i <= ballField.i) {
-        return false;
-    }
+// //     Vect ballField = fieldPosition + absoluteVector(ballData);
+// //     if (fieldPosition.i <= ballField.i) {
+// //         // if ball is ahead of position then do regular defence
+// //         return false;
+// //     }
 
-    Vect goal(0.0f, 0.0f, false);
-    goal.setStandard(-FIELD_LENGTH_MM / 2.0f, 0.0f);
-    Vect toGoal = goal - fieldPosition;
-    Vect toBall = ballField - fieldPosition;
-    if (toGoal.mag < 1.0f) {
-        return false;
-    }
 
-    Vect desired = toGoal;
-    if (toBall.mag > 1.0f) {
-        float along = (toBall.i * toGoal.i + toBall.j * toGoal.j) / (toGoal.mag * toGoal.mag);
-        float cross = toGoal.i * toBall.j - toGoal.j * toBall.i;
-        float lineDist = fabsf(cross) / toGoal.mag;
-        bool clips = lineDist < PUSH_CLEARANCE_MM && along > 0.0f && along < 1.0f;
-        bool inside = toBall.mag < PUSH_CLEARANCE_MM;
+// //     Vect goal(0.0f, 0.0f, false);
+// //     goal.setStandard(-FIELD_LENGTH_MM / 2.0f, 0.0f);
+// //     Vect toGoal = goal - fieldPosition;
+// //     Vect toBall = ballField - fieldPosition;
+// //     if (toGoal.mag < 1.0f) {
+// //         return false;
+// //     }
 
-        if (clips || inside) {
-            float inv = 1.0f / toBall.mag;
-            float tx = -toBall.j * inv;
-            float ty = toBall.i * inv;
-            if (tx * toGoal.i + ty * toGoal.j < 0.0f) {
-                tx = -tx;
-                ty = -ty;
-            }
+// //     Vect desired = toGoal;
+// //     if (toBall.mag > 1.0f) {
+// //         float along = (toBall.i * toGoal.i + toBall.j * toGoal.j) / (toGoal.mag * toGoal.mag);
+// //         float cross = toGoal.i * toBall.j - toGoal.j * toBall.i;
+// //         float lineDist = fabsf(cross) / toGoal.mag;
+// //         bool clips = lineDist < PUSH_CLEARANCE_MM && along > 0.0f && along < 1.0f;
+// //         bool inside = toBall.mag < PUSH_CLEARANCE_MM;
 
-            float away = inside ? (PUSH_CLEARANCE_MM - toBall.mag) / PUSH_CLEARANCE_MM : 0.0f;
-            desired.setStandard(
-                toGoal.i + (tx - toBall.i * inv * away) * toGoal.mag,
-                toGoal.j + (ty - toBall.j * inv * away) * toGoal.mag);
-            if (inside) {
-                float closing = desired.i * toBall.i + desired.j * toBall.j;
-                if (closing > 0.0f) {
-                    float scale = closing / (toBall.mag * toBall.mag);
-                    desired.setStandard(desired.i - toBall.i * scale, desired.j - toBall.j * scale);
-                }
-            }
-            if (desired.mag < 1.0f) {
-                desired.setStandard(tx, ty);
-            }
-        }
-    }
+// //         if (clips || inside) {
+// //             float inv = 1.0f / toBall.mag;
+// //             float tx = -toBall.j * inv;
+// //             float ty = toBall.i * inv;
+// //             if (tx * toGoal.i + ty * toGoal.j < 0.0f) {
+// //                 tx = -tx;
+// //                 ty = -ty;
+// //             }
 
-    mDir = desired.arg;
-    mSpd = DEFEND_RETURN_SPEED;
-    if (toGoal.mag < DEFEND_RETURN_SLOW_MM) {
-        mSpd = fmaxf(40.0f, DEFEND_RETURN_SPEED * (toGoal.mag / DEFEND_RETURN_SLOW_MM));
-    }
-    return true;
-}
+// //             float away = inside ? (PUSH_CLEARANCE_MM - toBall.mag) / PUSH_CLEARANCE_MM : 0.0f;
+// //             desired.setStandard(
+// //                 toGoal.i + (tx - toBall.i * inv * away) * toGoal.mag,
+// //                 toGoal.j + (ty - toBall.j * inv * away) * toGoal.mag);
+// //             if (inside) {
+// //                 float closing = desired.i * toBall.i + desired.j * toBall.j;
+// //                 if (closing > 0.0f) {
+// //                     float scale = closing / (toBall.mag * toBall.mag);
+// //                     desired.setStandard(desired.i - toBall.i * scale, desired.j - toBall.j * scale);
+// //                 }
+// //             }
+// //             if (desired.mag < 1.0f) {
+// //                 desired.setStandard(tx, ty);
+// //             }
+// //         }
+// //     }
+
+//     mDir = desired.arg;
+//     mSpd = DEFEND_RETURN_SPEED;
+//     if (toGoal.mag < DEFEND_RETURN_SLOW_MM) {
+//         mSpd = fmaxf(40.0f, DEFEND_RETURN_SPEED * (toGoal.mag / DEFEND_RETURN_SLOW_MM));
+//     }
+//     return true;
+// }
 
 void run_defend() {
     float moveDir = 0.0f;
     float moveSpd = 0.0f;
     float moveCor = 0.0f;
-    bool ballBehind = relBallDir > 90.0f && relBallDir < 270.0f;
+    bool ballBehind = (relBallDir > 90.0f && relBallDir < 270.0f) && ballData.exists();
     float bearingCor = -correction.update(normaliseAngle180(bearing), 0.0);
-
-    if (clear_push(moveDir, moveSpd)) {
-        moveCor = bearingCor;
-        line_avoid(moveDir, moveSpd);
-        motors.run(moveSpd, float_mod(moveDir - bearing, 360.0f), moveCor);
-        return;
-    }
-
+    // Serial.println(defendGoal.mag);
+ 
     if(ballBehind) {
         orbit(moveDir, moveSpd);
         moveCor = bearingCor;
@@ -349,9 +347,10 @@ void run_defend() {
     } else {
         if(defendGoal.exists()) {
             float goalAngle = float_mod(defendGoal.arg + 180.0f, 360.0f);
-            //moveCor = goalTrackDefend.update(normaliseAngle180(goalAngle), 0.0f);
-            moveCor = bearingCor;
-            float vert = vertCam.update(defendGoal.mag / 4.0f, DEFEND_CAM_TARGET);
+            moveCor = goalTrackDefend.update(normaliseAngle180(goalAngle), 0.0f);
+            // moveCor = bearingCor;
+            float vert = vertCam.update(defendGoal.mag, DEFEND_CAM_TARGET);
+            Serial.println(vert);
             float hozt = 0.0f;
             if(relBallStr != 0.0f) {
                 hozt = horizontal.update((relBallStr != 0.0f) ? -normaliseAngle180(relBallDir) : normaliseAngle180(bearing), 0.0f);
@@ -370,10 +369,10 @@ void run_defend() {
             moveSpd = 70.0f;
             moveDir = 180.0f;
         }
-        motors.run(moveSpd, moveDir, moveCor);
     }
-    
+
     line_avoid(moveDir, moveSpd);
+    motors.run(moveSpd, moveDir, moveCor);
 }
  
 void update_battery_led() {
@@ -443,13 +442,11 @@ void loop() {
             update_field_vectors();
             relBallDir = ballData.arg;
             relBallStr = ballData.mag;
-
-            Serial.println(ballData.mag);
  
             ls.update();
             update_absolute_line();
  
-            if (bt.get_role()) {
+            if (false) {
                 run_attack();
             } else {
                 run_defend();
@@ -461,4 +458,5 @@ void loop() {
     ballHandler.update(relBallStr);
     bt.update(motorsOn, ballData, fieldPosition, ballHandler.kicker_ready());
     lastMotorsOn = motorsOn;
+    // Serial.println();
 }

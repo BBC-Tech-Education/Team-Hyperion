@@ -5,7 +5,7 @@ from pyb import UART
 
 widSize = 480
 robot = False # control true, chaos false
-draw = False
+draw = True
 
 if robot:
     CENTER_X = widSize // 2 + 18
