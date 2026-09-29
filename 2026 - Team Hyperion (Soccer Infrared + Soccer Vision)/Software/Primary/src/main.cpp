@@ -271,7 +271,6 @@ void run_defend() {
     float moveCor = 0.0f;
     bool ballBehind = (relBallDir > 90.0f && relBallDir < 270.0f) && ballData.exists();
     float bearingCor = -correction.update(normaliseAngle180(bearing), 0.0);
-    // Serial.println(defendGoal.mag);
  
     if(ballBehind) {
         orbit(moveDir, moveSpd);
@@ -333,7 +332,6 @@ void setup() {
 }
  
 void loop() {
-    float startMicros = micros();
     update_battery_led();
     bool motorsOn = digitalRead(ENABLE_SWITCH);
  
@@ -383,5 +381,4 @@ void loop() {
     ballHandler.update(relBallStr);
     bt.update(motorsOn, ballData, fieldPosition, ballHandler.kicker_ready());
     lastMotorsOn = motorsOn;
-    Serial.println(micros() - startMicros);
 }
