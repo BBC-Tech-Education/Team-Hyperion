@@ -10,7 +10,7 @@ draw = False
 if robot:
     CENTER_X = widSize // 2 + 18
     CENTER_Y = widSize // 2 - 60
-    MAX_RADIUS = 170
+    MAX_RADIUS = 180
     MIN_RADIUS = 34
     INNER_CX = CENTER_X
     INNER_CY = CENTER_Y
@@ -18,7 +18,7 @@ else:
     CENTER_X = widSize // 2 - 3
     CENTER_Y = widSize // 2 - 40
     MAX_RADIUS = 200
-    MIN_RADIUS = 60
+    MIN_RADIUS = 65
     INNER_CX = CENTER_X + 2
     INNER_CY = CENTER_Y - 10
 
@@ -39,11 +39,11 @@ uart = UART(3, 115200, timeout_char=100)
 
 #blue, yellow
 if robot:
-    goal_thresholds = [(0, 35, -128, 127, -128, -21), (37, 100, 1, 18, 18, 127)]
-    ball_threshold = [(56, 100, 41, 127, 28, 127)]
+    goal_thresholds = [(31, 37, -128, 8, -128, -14), (38, 52, -2, 24, 24, 127)]
+    ball_threshold = [(53, 100, 42, 127, 37, 127)]
 else:
-    goal_thresholds = [(28, 39, -128, 29, -128, -20), (26, 51, 3, 20, 19, 127)]
-    ball_threshold = [(46, 100, 34, 127, 32, 127)]
+    goal_thresholds = [(32, 40, -128, 17, -128, -21), (37, 100, -128, 32, 16, 127)]
+    ball_threshold = [(60, 100, 22, 127, 31, 127)]
 
 ROI_SIZE_BALL = 75
 ROI_SIZE_GOAL = 120

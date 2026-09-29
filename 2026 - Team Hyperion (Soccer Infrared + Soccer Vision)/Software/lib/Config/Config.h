@@ -2,7 +2,7 @@
 #define CONFIG_H
 
 /////////////////////////////////// ROBOT ID ///////////////////////////////////
-#define CONTROL 0 // control = 1, chaos = 0
+#define CONTROL 1 // control = 1, chaos = 0
 #define GOAL_TRACKING 1
 #define ORBIT 1 // enables or disables Orbit
 #define SURGE 1// enables or disables Surging
@@ -65,7 +65,7 @@
     #define ORBIT_DIST_EXP -14.56002f
     #define GOAL_DIST_FOR_KICKER_ENABLE 70.0f
 
-    #define DEFEND_CAM_TARGET 70.0
+    #define DEFEND_CAM_TARGET 540.0
     #define DEFEND_MAX_DIST 465.07
     #define LS_THRESH 275
     #define KP_IMU 1.25
@@ -74,15 +74,15 @@
     #define KD_GOALT_ATK 0.025
     #define KP_GOALT_DEF 1.25
     #define KD_GOALT_DEF 0.04
-    #define KP_HOZT 1.8
-    #define KP_CVERT 13.0
+    #define KP_HOZT 1.5
+    #define KP_CVERT 0.15
     #define KD_CVERT 0.0
     #define KP_LOC 0.25
     #define KD_LOC 0.0
     #define KP_LAV 100.0
     #define KD_LAV 0.0
     #define COM_MODULE_THRESH 900
-    #define LS_SLIDE_CONST 255.0f
+    #define LS_SLIDE_CONST 255.0f 
     #define CAM_CENTER_X 244
     #define CAM_CENTER_Y 244
 #else
@@ -189,7 +189,7 @@
 #define BT_CONNECTION_TIMEOUT_US 1000000UL
 #define BT_SEND_TIMER_US 20000
 #define BT_SWITCH_TIMER_US 5000000UL // min time between defender-steal role swaps
-#define SWITCHING_STRENGTH 50.0f
+#define SWITCHING_STRENGTH 250.0f
 
 /////////////////////////////// VOLTAGE DIVIDERS ///////////////////////////////
 
