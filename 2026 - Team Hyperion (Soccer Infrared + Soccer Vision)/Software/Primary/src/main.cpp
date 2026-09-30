@@ -76,6 +76,8 @@ Vect otherBallData;
  
 /////////////////////////////////// FUNCTIONS /////////////////////////////////
 
+//! @brief Make a vector relative to the field rather than the robot
+//! @param v Vector that is being converted
 Vect absoluteVector(Vect v) {
     if(v.exists()) {
         return Vect(v.mag, float_mod(bearing + v.arg, 360.0f), true);
@@ -84,34 +86,39 @@ Vect absoluteVector(Vect v) {
     }
 }
  
+//! @brief Update field position vector based on goal vectors
 void update_field_vectors() {
     otherFieldPosition = bt.get_other_pos();
     otherBallData = bt.get_other_ball();
 
+    // Convert all camera vectors relative to field
     Vect globalAttack = absoluteVector(attackGoal);
     Vect globalDefend = absoluteVector(defendGoal);
     Vect globalBall = absoluteVector(ballData);
 
+    // The vector of the goals relative to the center of the field
     Vect attackGoalPos(FIELD_LENGTH_MM / 2.0f, 0.0f, true);
     Vect defendGoalPos(-FIELD_LENGTH_MM / 2.0f, 0.0f, true);
 
-    bool hasAttack = attackGoal.exists();
-    bool hasDefend = defendGoal.exists();
-
-    if (hasAttack && hasDefend) {
+    if (attackGoal.exists() && defendGoal.exists()) {
+        // If the attack goal and defend goal exist
         Vect posFromAttack = attackGoalPos - globalAttack;
         Vect posFromDefend = defendGoalPos - globalDefend;
         fieldPosition = (posFromAttack + posFromDefend) / 2.0f;
-    } else if (hasAttack) {
+    } else if (attackGoal.exists()) {
+        // If only the attack goal exists
         fieldPosition = attackGoalPos - globalAttack;
-    } else if (hasDefend) {
+    } else if (defendGoal.exists()) {
+        // If only the defend goal exists
         Vect tempGoal = Vect(globalDefend.mag, float_mod(globalDefend.arg + 180.0f, 360.0f), true);
         fieldPosition = tempGoal + defendGoalPos;
     } else {
+        // If no goals exist
         fieldPosition = Vect(0.0f, 0.0f, false);
     }
 }
  
+//! @brief Update the line direction and line size relative to that of the field
 void update_absolute_line() {
     relLineAngle = ls.get_line_angle();
     relLineSize = ls.get_line_size();
@@ -152,16 +159,20 @@ void update_absolute_line() {
     }
 }
  
+//! @brief Adjusts the movement direction and speed if the line is seen
+//! @param mDir The current movement direction of the robot.
+//! @param mSpd The current movement speed of the robot.
 void line_avoid(float &mDir, float &mSpd) {
     #if LIGHT_SENSORS
     if (absLineSize != -1.0f) {
+        // If the line is detected
         
         if (relBallStr == 0.0f) {
+            // If we don't see the ball, then simply move in the opposit edirection of the line
             mDir = float_mod(absLineAngle + 180.0f, 360.0f);
             mSpd = -lineAvoid.update(absLineSize, -1.0f);
-        } 
-        
-        else if (absLineSize < LINE_AVOID_THRESH) {
+        } else if (absLineSize < LINE_AVOID_THRESH) {
+            // If the robot is moving towards the line, and it is not too far past, stay onthe line
             if (smallestAngleBetween(mDir, absLineAngle) < 90.0f) {
                 mSpd = sin(smallestAngleBetween(mDir, absLineAngle) * DEG_TO_RAD) * LS_SLIDE_CONST;
                 float difference = normaliseAngle180(float_mod(mDir - absLineAngle, 360.0f));
@@ -172,6 +183,7 @@ void line_avoid(float &mDir, float &mSpd) {
                 }
             }
         } else {
+            // The robot should move away from the line if it sees the ball but is way over
             mDir = float_mod(absLineAngle + 180.0f, 360.0f);
             mSpd = -lineAvoid.update(absLineSize, -1.0f);
         }
@@ -180,12 +192,19 @@ void line_avoid(float &mDir, float &mSpd) {
     #endif
 }
  
+//! @brief Orbit algorithm, calculates how we actually move behind the ball.
+//! @param mDir The current movement direction of the robot.
+//! @param mSpd The current movement speed of the robot.
 void orbit(float &mDir, float &mSpd) {
     float absBallDir = float_mod(relBallDir + bearing, 360.0f);
     float orbitTarget = 0.0f;
+
+    // Adjust the "target" based on where the goal is
     if (attackGoal.exists() && GOAL_TRACKING) {
         orbitTarget = float_mod(bearing, 360.0f);
     }
+
+    // Algorithm deciding how much "angle" to add to the current ball direction
     #if ORBIT
     #if CONTROL
     float dir = normaliseAngle180(float_mod(absBallDir - orbitTarget, 360.0f));
@@ -199,6 +218,7 @@ void orbit(float &mDir, float &mSpd) {
     float angleAddition = distMulti * ballAngDiff;
     #endif
 
+    // Move forward at full speed if the robot sees the ball infront of it, close enough, or if the light gate is triggered
     #if SURGE
     if((((absBallDir < BALL_FRONT_MIN && absBallDir > BALL_FRONT_MAX) && (relBallStr < BALL_STR_CLOSE_THRESH)) || ballHandler.photogate_triggered())) {
         mDir = 0.0f;
@@ -213,15 +233,18 @@ void orbit(float &mDir, float &mSpd) {
     #endif
 }
 
+//! @brief Attack code algorithm - scores goals
 void run_attack() {
     float moveDir = 0.0f;
     float moveSpd = 0.0f;
     float moveCor = 0.0f;
  
     if (relBallStr != 0.0f || ballHandler.photogate_triggered()) {
+        // If we can see the ball, orbit
         localiseTimer.update();
         orbit(moveDir, moveSpd);
     } else {
+        // If we haven't seen the ball for a certain period of time, we can localise
         #if LOCALISATION
         if (localiseTimer.time_has_passed_no_update()) {
             moveDir = float_mod(fieldPosition.arg + 180.0f, 360.0f);
@@ -235,7 +258,7 @@ void run_attack() {
         moveSpd = 0.0f;
         #endif
     }
- 
+
     line_avoid(moveDir, moveSpd);
 
     if (onField) {
@@ -243,18 +266,23 @@ void run_attack() {
             ? fabsf(normaliseAngle180(float_mod(attackGoal.arg, 360.0f)))
             : fabsf(normaliseAngle180(bearing));
         if (facingError <= 15.0f) {
+            // We are facing the goal
             if(attackGoal.mag > GOAL_DIST_FOR_KICKER_ENABLE) {
+                // If we are close enough to the attack goal
                 if(ballData.exists()) {
+                    // If the ball data exists and the ball is infront, kick
                     if((ballData.arg < BALL_FRONT_MIN && ballData.arg > BALL_FRONT_MAX)) {
                         ballHandler.kick();
                     }
                 } else {
+                    // If the ball data does not exist, kick
                     ballHandler.kick();
                 }
             }
         }
     }
  
+    // Goal Track
     if (attackGoal.exists() && GOAL_TRACKING) {
         float goalAngle = normaliseAngle180(float_mod(attackGoal.arg, 360.0f));
         moveCor = goalTrackAttack.update(goalAngle, 0.0f);
@@ -265,6 +293,7 @@ void run_attack() {
     motors.run(moveSpd, float_mod(moveDir - bearing, 360.0f), moveCor);
 }
 
+//! @brief Defend code algorithm - helps concede less goals
 void run_defend() {
     float moveDir = 0.0f;
     float moveSpd = 0.0f;
@@ -273,22 +302,28 @@ void run_defend() {
     float bearingCor = -correction.update(normaliseAngle180(bearing), 0.0);
  
     if(ballBehind) {
+        // Orbit and face forward if ball behind
         orbit(moveDir, moveSpd);
         moveCor = bearingCor;
         motors.run(moveSpd, float_mod(moveDir - bearing, 360.0f), moveCor);
     } else {
         if(defendGoal.exists()) {
+            // Rotational PID, face towards the goal
             float goalAngle = float_mod(defendGoal.arg + 180.0f, 360.0f);
             moveCor = goalTrackDefend.update(normaliseAngle180(goalAngle), 0.0f);
+            // Vertical PID, stay optimal distance away from goal
             float vert = vertCam.update(defendGoal.mag, DEFEND_CAM_TARGET);
-            float hozt = 0.0f;
-            hozt = horizontal.update((relBallStr != 0.0f) ? -normaliseAngle180(relBallDir) : normaliseAngle180(bearing), 0.0f);
+            // Hotizontal PID, move towards ball
+            // If the ball does not exist, center to the middle of the field
+            float hozt = horizontal.update((relBallStr != 0.0f) ? -normaliseAngle180(relBallDir) : normaliseAngle180(bearing), 0.0f);
+            // Kick when the ball is in the capture zone
             if(onField) {
                 ballHandler.kick();
             }
             moveSpd = sqrtf(hozt*hozt + vert*vert);
             moveDir = (atan2f(hozt, vert) * RAD_TO_DEG);
         } else {
+            // If we cannot see the defend goal, move backwards
             moveSpd = 70.0f;
             moveDir = 180.0f;
         }
@@ -298,6 +333,7 @@ void run_defend() {
     motors.run(moveSpd, moveDir, moveCor);
 }
  
+//! @brief Turns battery LED on when robot battery becomes low
 void update_battery_led() {
     batLvl = battery.get_lvl();
  
@@ -310,10 +346,11 @@ void update_battery_led() {
         digitalWrite(BATTERY_LED, LOW);
     }
 }
- 
+
 void setup() {
     state = STATE_IDLE;
 
+    // Initialise all components
     while (!bno.begin(OPERATION_MODE_IMUPLUS)) {
         Serial.println("No BNO055 detected.");
         delay(1000);
@@ -334,7 +371,8 @@ void setup() {
 void loop() {
     update_battery_led();
     bool motorsOn = digitalRead(ENABLE_SWITCH);
- 
+
+    // Decide state based on enable switch.
     if (!motorsOn) {
         state = STATE_IDLE;
     } else if (!lastMotorsOn) {
@@ -343,32 +381,36 @@ void loop() {
  
     switch (state) {
         case STATE_IDLE:
+            // Stop running motors
             motors.run(0.0f, 0.0f, 0.0f);
             break;
  
         case STATE_CALIBRATE:
+            // Reset compass heading
             bno.getEvent(&event);
             target = event.orientation.x;
             state = STATE_GAME;
             break;
  
         case STATE_GAME: {
+            // Update compass heading
             bno.getEvent(&event); 
             bearing = float_mod(event.orientation.x - target, 360.0f);
  
+            // Update camera data
             cam.update();
             attackGoal = cam.get_attack();
             defendGoal = cam.get_defend();
             ballData = cam.get_ball();
-
-            
-            update_field_vectors();
             relBallDir = ballData.arg;
             relBallStr = ballData.mag;
+            update_field_vectors();
  
+            // Update light sensor board data
             ls.update();
             update_absolute_line();
  
+            // Update robot logic based on bluetooth
             if (bt.get_role()) {
                 run_attack();
             } else {
