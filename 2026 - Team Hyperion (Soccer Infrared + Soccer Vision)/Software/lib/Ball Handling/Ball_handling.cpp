@@ -88,7 +88,8 @@ void BallHandling::update(float ballStr) {
         rechargeTimer.update();
     }
 
-    if (!isKicking && ((ballStr > DRIBBLER_STR_THRESH) || photogate_triggered())) {
+
+    if ((!isKicking && ((ballStr > DRIBBLER_STR_THRESH)) || photogate_triggered())) {
         run_dribbler(DRIBBLER_SPEED);
     } else {
         run_dribbler(0.0f);
@@ -100,8 +101,8 @@ void BallHandling::run_dribbler(float spd) {
         spd = 255.0f;
     }
     analogWrite(DRPWM, spd);
-    digitalWrite(DRINA, HIGH);
-    digitalWrite(DRINB, LOW);
+    digitalWrite(DRINB, HIGH);
+    digitalWrite(DRINA, LOW);
 }
  
 void BallHandling::update_caps_led() {

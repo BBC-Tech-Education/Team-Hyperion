@@ -91,7 +91,7 @@
     #define SURGE_SPEED 110.0f //130.0f
     #define BALL_STR_CLOSE_THRESH 20.0f / 4.0f//20.0f
     #define BALL_CLOSE_STR 80.0f / 4.0f //65.0f
-    #define DRIBBLER_STR_THRESH 75.0f / 4.0f
+    #define DRIBBLER_STR_THRESH 75.0f
     #define BALL_FRONT_MIN 35.0f //35.0f
     #define BALL_FRONT_MAX 330.f //345.0f
     #define ORBIT_TARGET_OFFSET 45.0f

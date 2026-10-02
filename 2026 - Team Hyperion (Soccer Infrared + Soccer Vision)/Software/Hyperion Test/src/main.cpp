@@ -13,14 +13,30 @@ void setup() {
 }
 
 void loop() {
-  // ballHandler.update();
-  // Serial.println(digitalRead(ENABLE_SWITCH));
+  ballHandler.update(80.0f);
+  Serial.print(ballHandler.kicker_ready());
+  Serial.print("\t");
+  Serial.println(ballHandler.can_kick());
   if(digitalRead(ENABLE_SWITCH)) {
-    ballHandler.run_dribbler(100.0f);
-  } else {
-    ballHandler.run_dribbler(0.0f);
+    ballHandler.kick();
   }
 }
+
+// it will not kick without the enable switch being on, so if you want it to
+// dribble and then kick, you can leave the enable switch off and then turn it on when you want to kick
+// up to you how you want to do it,
+
+
+// this will print 2 things, one if the kicker is ready (without photogate)
+// two: it will print if it is ready to kick with photogate, if this prints one that means it probably just kicked
+// realistically, just worry about the first number as the 2nd one will only be there for like 10 loops (really quick)
+
+// the code has been uploaded
+
+// hold on, is this how much time is left for it to kick?
+
+// that is quite hard as it is its own timer class, I can print if it is READY to kick, is that okay?
+// 
 
 // ok enable switch now ok
 
