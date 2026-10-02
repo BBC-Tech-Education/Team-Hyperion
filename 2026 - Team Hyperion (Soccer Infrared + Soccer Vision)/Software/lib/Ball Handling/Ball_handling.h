@@ -19,10 +19,12 @@ public:
     uint8_t get_current_kicks() { return kicks; };
 
     uint16_t photogateThresh = 0;
+
+    void run_dribbler(float spd);
    
 private:
     void update_caps_led();
-    void run_dribbler(float spd);
+    // void run_dribbler(float spd);
  
     VoltageDivider kickerVd;
     Timer pulseTimer;

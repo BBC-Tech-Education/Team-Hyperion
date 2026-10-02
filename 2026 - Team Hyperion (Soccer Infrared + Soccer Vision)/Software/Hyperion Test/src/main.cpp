@@ -1,43 +1,39 @@
 #include <Arduino.h>
 #include <Pins.h>
 #include <Ball_handling.h>
-#include <Drive_system.h>
+// #include <Drive_system.h>
 
 BallHandling ballHandler;
 
-DriveSystem motors;
 
 
 void setup() {
-  // ballHandler.init();
-  // pinMode(ENABLE_SWITCH, INPUT);
-  // motors.init();
-
-  pinMode(FLINA, OUTPUT);
-  pinMode(FLINB, OUTPUT);
-  pinMode(FLPWM, OUTPUT);
+  ballHandler.init();
+  pinMode(ENABLE_SWITCH, INPUT);
 }
 
 void loop() {
-  // Serial.print(analogRead(KICKER_VD_PIN));
-  // Serial.print("\t");
   // ballHandler.update();
-  // Serial.print(ballHandler.get_current_kicks());
-  // Serial.print("\t");
-  // Serial.print(ballHandler.can_kick());
-  // Serial.print("\t");
-  // if(digitalRead(ENABLE_SWITCH)) {
-  //   ballHandler.kick();
-  // }
-  // Serial.print(analogRead(PHOTOGATE_PIN));
-  // Serial.print("\t");
-  // Serial.println(ballHandler.photogate_triggered());
-  // Serial.println(analogRead(PHOTOGATE_PIN));
-
-  // motors.run(100.0f, 0.0f, 0.0f);
-
-  digitalWrite(FLINA, HIGH);
-  digitalWrite(FLINB, LOW);
-  analogWrite(FLPWM, 100);
-  
+  // Serial.println(digitalRead(ENABLE_SWITCH));
+  if(digitalRead(ENABLE_SWITCH)) {
+    ballHandler.run_dribbler(100.0f);
+  } else {
+    ballHandler.run_dribbler(0.0f);
+  }
 }
+
+// ok enable switch now ok
+
+// im literally writing power to them regardless of anything, so there has tobe something wrong wiring wise
+
+// This has photogate as well btw - so it wont kick if the photogate is not activated
+// speak herew
+// is bluetooth 
+
+// that doesnt do anything im literally just writing power to dribb at 100/255
+
+// what does that do its writing to the pin manually- you cant print nothing
+
+// no because this is a completely seperate file on its own
+
+// click enable switch, but shouldnt kick until ball is in capture

@@ -96,13 +96,12 @@ void BallHandling::update(float ballStr) {
 }
 
 void BallHandling::run_dribbler(float spd) {
-    if (spd > 255.0f) spd = 255.0f;
-    else if (spd < -255.0f) spd = -255.0f;
-
-    uint8_t finalSpd = round(fabs(spd));
-    analogWrite(DRPWM, finalSpd);
-    digitalWrite(DRINA, (spd > 0.0f));
-    digitalWrite(DRINB, (spd < 0.0f));
+    if(spd > 255.0f) {
+        spd = 255.0f;
+    }
+    analogWrite(DRPWM, spd);
+    digitalWrite(DRINA, HIGH);
+    digitalWrite(DRINB, LOW);
 }
  
 void BallHandling::update_caps_led() {
