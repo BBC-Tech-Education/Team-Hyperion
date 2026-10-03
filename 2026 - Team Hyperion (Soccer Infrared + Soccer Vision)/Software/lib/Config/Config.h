@@ -188,7 +188,7 @@
 #define BT_CONNECTION_TIMEOUT_US 1000000UL
 #define BT_ROLE_CONFLICT_TIMER 1000000UL
 #define BT_SEND_TIMER_US 20000
-#define BT_SWITCH_TIMER_US 5000000UL // min time between defender-steal role swaps
+#define BT_SWITCH_TIMER_US 5000000UL
 #define SWITCHING_STRENGTH 250.0f
 
 /////////////////////////////// VOLTAGE DIVIDERS ///////////////////////////////

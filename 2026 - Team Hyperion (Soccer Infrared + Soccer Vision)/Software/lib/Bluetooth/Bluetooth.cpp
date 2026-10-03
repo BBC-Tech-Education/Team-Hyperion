@@ -55,7 +55,7 @@ void Bluetooth::read() {
 }
 
 void Bluetooth::calculate_role() {    
-    if (self.ball.mag == 0 && other.ball.mag == 0) {
+    if ((self.ball.mag == 0.0f) && (other.ball.mag == 0.0f)) {
         switching = false;
         return;
     }
@@ -77,6 +77,12 @@ void Bluetooth::calculate_role() {
     } else if (!self.role && (self.ball.isBetween(345.0f, 15.0f) && (self.ball.mag > SWITCHING_STRENGTH))) {
         switching = true;
     }
+
+    // ask raj when we turn on bt, for some reason the bt does not seem to connect to the other robot even after quite a
+    // while e.g. when a robot is on the field (defending) and we put the other robot on the field, they do not pair/connect
+    //            to each other AT ALL (like we have never seen it before and we waited like 2 mins)
+
+    // when I did pair them: I made sure: BAUD Rate is the same, ADDR was assigned as the same, One was slave (0) one was master (1)
 
     #if DEBUG_BT_ROLE
         Serial.printf("self role:%d en:%d mag:%.1f | other role:%d en:%d mag:%.1f conn:%d sw:%d\n",
