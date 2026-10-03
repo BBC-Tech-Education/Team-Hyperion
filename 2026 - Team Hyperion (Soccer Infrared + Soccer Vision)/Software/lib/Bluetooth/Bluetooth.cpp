@@ -71,7 +71,7 @@ void Bluetooth::calculate_role() {
         roleConflict.update();
     } else if (self.role == other.role) {
         if (roleConflict.time_has_passed_no_update()) {
-            self.role = self.ball.mag > other.ball.mag; 
+            self.role = self.ball.mag < other.ball.mag; 
             roleConflict.update();
         }
     } else if (!self.role && (self.ball.isBetween(345.0f, 15.0f) && (self.ball.mag > SWITCHING_STRENGTH))) {
