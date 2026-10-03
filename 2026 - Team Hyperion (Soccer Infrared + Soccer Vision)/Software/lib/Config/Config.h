@@ -8,7 +8,7 @@
 #define SURGE 1// enables or disables Surging
 #define LIGHT_SENSORS 1
 #define GOAL_TRACKING 1
-#define LOCALISATION (1 && GOAL_TRACKING)
+#define LOCALISATION (0 && GOAL_TRACKING)
 #define DRIBBLER 0
 
 //////////////////////////////////// DEBUG ////////////////////////////////////
