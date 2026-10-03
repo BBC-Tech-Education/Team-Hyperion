@@ -303,8 +303,10 @@ void run_defend() {
     float bearingCor = -correction.update(normaliseAngle180(bearing), 0.0);
 
     // Serial.println(defendGoal.mag);
- 
-    if(ballBehind) {
+    if ((relBallDir < 10.0f || relBallDir > 350.0f) && relBallStr <= 200){
+        moveCor = -correction.update(normaliseAngle180(bearing), 0.0f);
+        motors.run(100, relBallDir, moveCor);
+    } else if(ballBehind) {
         // Orbit and face forward if ball behind
         orbit(moveDir, moveSpd);
         moveCor = bearingCor;
@@ -418,7 +420,7 @@ void loop() {
             update_absolute_line();
  
             // Update robot logic based on bluetooth
-            if (bt.get_role()) {
+            if (false) {
                 run_attack();
             } else {
                 run_defend();
