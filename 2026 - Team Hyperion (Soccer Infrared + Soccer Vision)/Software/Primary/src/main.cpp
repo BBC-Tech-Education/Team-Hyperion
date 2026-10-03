@@ -415,7 +415,7 @@ void loop() {
  
             // Update robot logic based on bluetooth
             // if (bt.get_role()) {
-            if(true) {
+            if(CONTROL) {
                 run_attack();
             } else {
                 run_defend();
