@@ -301,7 +301,7 @@ void run_defend() {
     bool ballBehind = (relBallDir > 90.0f && relBallDir < 270.0f) && ballData.exists();
     float bearingCor = -correction.update(normaliseAngle180(bearing), 0.0);
 
-    // Serial.println(defendGoal.mag);
+    Serial.println(defendGoal.mag);
  
     if(ballBehind) {
         // Orbit and face forward if ball behind
@@ -318,6 +318,7 @@ void run_defend() {
             // Hotizontal PID, move towards ball
             // If the ball does not exist, center to the middle of the field
             float hozt = horizontal.update((relBallStr != 0.0f) ? -normaliseAngle180(relBallDir) : normaliseAngle180(bearing), 0.0f);
+            hozt = 0.0f;
             // float hozt = horizontal.update(-normaliseAngle180(relBallDir), 0.0f);
             // Kick when the ball is in the capture zone
             if(onField) {
@@ -414,7 +415,7 @@ void loop() {
             update_absolute_line();
  
             // Update robot logic based on bluetooth
-            if (true) {
+            if (false) {
                 run_attack();
             } else {
                 run_defend();
