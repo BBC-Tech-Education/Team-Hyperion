@@ -100,7 +100,7 @@
     #define ORBIT_DIST_EXP 1//-14.56002f
     #define GOAL_DIST_FOR_KICKER_ENABLE 70.0f
 
-    #define DEFEND_CAM_TARGET 550.0f
+    #define DEFEND_CAM_TARGET 450.0f
     #define DEFEND_MAX_DIST 97.0f
     #define LS_THRESH 275
     #define KP_IMU 1.25
@@ -111,7 +111,7 @@
     #define KP_GOALT_DEF 1.25
     #define KD_GOALT_DEF 0.04
     #define KP_HOZT 1.5
-    #define KP_CVERT 0.25
+    #define KP_CVERT 0.30
     #define KD_CVERT 0.0
     #define KP_LOC 0.25f
     #define KD_LOC 0.0
@@ -198,7 +198,7 @@
 
 /////////////////////////////// BALL HANDLING /////////////////////////////////
 
-#define KICK_PULSE_US              50000UL    // pin LOW duration (us)
+#define KICK_PULSE_US              30000UL    // pin LOW duration (us)
 #define KICK_RECHARGE_US           20000000UL  // +1 kick every this many us
 #define KICK_COOLDOWN_US           5000000UL   // after pulse ends (us)
 #define MAX_KICKS                  5
