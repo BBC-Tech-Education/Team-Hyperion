@@ -9,7 +9,6 @@
 #define LIGHT_SENSORS 1
 #define GOAL_TRACKING 1
 #define LOCALISATION (1 && GOAL_TRACKING)
-#define KICKER 0
 #define DRIBBLER 0
 
 //////////////////////////////////// DEBUG ////////////////////////////////////

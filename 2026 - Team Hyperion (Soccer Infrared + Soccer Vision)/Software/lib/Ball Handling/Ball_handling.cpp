@@ -88,12 +88,13 @@ void BallHandling::update(float ballStr) {
         rechargeTimer.update();
     }
 
-
+    #if DRIBBLER
     if ((!isKicking && ((ballStr > DRIBBLER_STR_THRESH)) || photogate_triggered())) {
         run_dribbler(DRIBBLER_SPEED);
     } else {
         run_dribbler(0.0f);
     }
+    #endif
 }
 
 void BallHandling::run_dribbler(float spd) {

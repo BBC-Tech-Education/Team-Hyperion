@@ -15,10 +15,10 @@ if robot:
     INNER_CX = CENTER_X
     INNER_CY = CENTER_Y
 else:
-    CENTER_X = widSize // 2 - 3
-    CENTER_Y = widSize // 2 - 40
+    CENTER_X = widSize // 2 + 14
+    CENTER_Y = widSize // 2 - 32
     MAX_RADIUS = 200
-    MIN_RADIUS = 65
+    MIN_RADIUS = 75
     INNER_CX = CENTER_X + 2
     INNER_CY = CENTER_Y - 10
 
@@ -31,7 +31,7 @@ sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.VGA)
 sensor.set_windowing((widSize, widSize))
 sensor.skip_frames(time=2000)
-sensor.set_auto_gain(False, gain_db=22.0)
+sensor.set_auto_gain(False, gain_db=19.0)
 sensor.set_auto_whitebal(False, rgb_gain_db=(0.0, 0.0, 0.0))
 sensor.set_auto_exposure(False, exposure_us=8000)
 
@@ -42,8 +42,8 @@ if robot:
     goal_thresholds = [(31, 37, -128, 8, -128, -14), (38, 52, -2, 24, 24, 127)]
     ball_threshold = [(53, 100, 42, 127, 37, 127)]
 else:
-    goal_thresholds = [(32, 40, -128, 17, -128, -21), (37, 100, -128, 32, 16, 127)]
-    ball_threshold = [(60, 100, 22, 127, 31, 127)]
+    goal_thresholds = [(0, 40, -128, 25, -29, -14), (37, 100, -128, 26, 15, 47)]
+    ball_threshold = [(37, 100, 47, 127, 27, 127)]
 
 ROI_SIZE_BALL = 75
 ROI_SIZE_GOAL = 120
