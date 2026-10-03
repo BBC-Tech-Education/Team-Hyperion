@@ -4,32 +4,31 @@ import time
 from pyb import UART
 
 widSize = 480
-robot = True # control true, chaos false
-draw = False
+robot = False # control true, chaos false
+draw = True
 
 if robot:
-<<<<<<< Updated upstream
-    CENTER_X = widSize // 2 + 18
-    CENTER_Y = widSize // 2 - 60
-    MAX_RADIUS = 180
-    MIN_RADIUS = 34
-    INNER_CX = CENTER_X
-    INNER_CY = CENTER_Y
-=======
-    CENTER_X = widSize // 2 + 16
+    # CENTER_X = widSize // 2 + 18
+    # CENTER_Y = widSize // 2 - 60
+    # MAX_RADIUS = 180
+    # MIN_RADIUS = 34
+    # INNER_CX = CENTER_X
+    # INNER_CY = CENTER_Y
+# =======
+    CENTER_X = widSize // 2 + 14
     CENTER_Y = widSize // 2 - 40
     MAX_RADIUS = 175
     MIN_RADIUS = 50
     INNER_CX = CENTER_X - 6
     INNER_CY = CENTER_Y - 2
->>>>>>> Stashed changes
+# >>>>>>> Stashed changes
 else:
-    CENTER_X = widSize // 2 - 3
-    CENTER_Y = widSize // 2 - 40
+    CENTER_X = widSize // 2 + 14
+    CENTER_Y = widSize // 2 - 32
     MAX_RADIUS = 200
-    MIN_RADIUS = 65
+    MIN_RADIUS = 70
     INNER_CX = CENTER_X + 2
-    INNER_CY = CENTER_Y - 10
+    INNER_CY = CENTER_Y
 
 MIN_RADIUS_SQ = MIN_RADIUS * MIN_RADIUS
 MAX_RADIUS_SQ = MAX_RADIUS * MAX_RADIUS
@@ -48,16 +47,16 @@ uart = UART(3, 115200, timeout_char=100)
 
 #blue, yellow
 if robot:
-<<<<<<< Updated upstream
-    goal_thresholds = [(31, 37, -128, 8, -128, -14), (38, 52, -2, 24, 24, 127)]
-    ball_threshold = [(53, 100, 42, 127, 37, 127)]
-=======
+# <<<<<<< Updated upstream
+#     goal_thresholds = [(31, 37, -128, 8, -128, -14), (38, 52, -2, 24, 24, 127)]
+#     ball_threshold = [(53, 100, 42, 127, 37, 127)]
+# =======
     goal_thresholds = [(0, 100, -128, -3, -128, -11), (0, 100, -128, 4, 22, 127)]
     ball_threshold = [(0, 100, 19, 127, 30, 127)]
->>>>>>> Stashed changes
+# >>>>>>> Stashed changes
 else:
-    goal_thresholds = [(32, 40, -128, 17, -128, -21), (37, 100, -128, 32, 16, 127)]
-    ball_threshold = [(60, 100, 22, 127, 31, 127)]
+    goal_thresholds = [(0, 40, -128, 25, -29, -14), (37, 100, -128, 26, 15, 47)]
+    ball_threshold = [(37, 100, 47, 127, 27, 127)]
 
 ROI_SIZE_BALL = 75
 ROI_SIZE_GOAL = 120
@@ -158,7 +157,7 @@ while True:
 
     blob = None
     for b in img.find_blobs(ball_threshold, roi=ball_roi, x_stride=1, y_stride=1,
-                            area_threshold=0, pixels_threshold=0, merge=True, margin=1):
+                            area_threshold=8, pixels_threshold=8, merge=True, margin=1):
         if in_valid_zone(b) and (blob is None or b.area() > blob.area()):
             blob = b
 
