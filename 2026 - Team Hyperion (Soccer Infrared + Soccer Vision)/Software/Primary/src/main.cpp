@@ -301,8 +301,11 @@ void run_defend() {
     bool ballBehind = (relBallDir > 90.0f && relBallDir < 270.0f) && ballData.exists();
     float bearingCor = -correction.update(normaliseAngle180(bearing), 0.0);
 
- 
-    if(ballBehind) {
+    // Serial.println(defendGoal.mag);
+    if ((relBallDir < 10.0f || relBallDir > 350.0f) && relBallStr <= 200){
+        moveCor = -correction.update(normaliseAngle180(bearing), 0.0f);
+        motors.run(100, relBallDir, moveCor);
+    } else if(ballBehind) {
         // Orbit and face forward if ball behind
         orbit(moveDir, moveSpd);
         moveCor = bearingCor;
