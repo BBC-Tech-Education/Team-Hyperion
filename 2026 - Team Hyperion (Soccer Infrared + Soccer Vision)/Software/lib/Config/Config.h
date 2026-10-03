@@ -2,13 +2,13 @@
 #define CONFIG_H
 
 /////////////////////////////////// ROBOT ID ///////////////////////////////////
-#define CONTROL 1 // control = 1, chaos = 0
+#define CONTROL 0 // control = 1, chaos = 0
 #define GOAL_TRACKING 1
 #define ORBIT 1 // enables or disables Orbit
 #define SURGE 1// enables or disables Surging
 #define LIGHT_SENSORS 1
 #define GOAL_TRACKING 1
-#define LOCALISATION (1 && GOAL_TRACKING)
+#define LOCALISATION (0 && GOAL_TRACKING)
 #define DRIBBLER 0
 
 //////////////////////////////////// DEBUG ////////////////////////////////////
