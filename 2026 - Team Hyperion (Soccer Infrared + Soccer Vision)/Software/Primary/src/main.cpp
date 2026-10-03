@@ -298,11 +298,9 @@ void run_defend() {
     float moveDir = 0.0f;
     float moveSpd = 0.0f;
     float moveCor = 0.0f;
-    Serial.println(relBallDir);
     bool ballBehind = (relBallDir > 90.0f && relBallDir < 270.0f) && ballData.exists();
     float bearingCor = -correction.update(normaliseAngle180(bearing), 0.0);
 
-    // Serial.println(defendGoal.mag);
  
     if(ballBehind) {
         // Orbit and face forward if ball behind
@@ -325,8 +323,6 @@ void run_defend() {
             if(onField) {
                 ballHandler.kick();
             }
-            Serial.println(hozt);
-            Serial.println(vert);
             moveSpd = sqrtf(hozt*hozt + vert*vert);
             moveDir = (atan2f(hozt, vert) * RAD_TO_DEG);
         } else {
@@ -418,7 +414,8 @@ void loop() {
             update_absolute_line();
  
             // Update robot logic based on bluetooth
-            if (bt.get_role()) {
+            // if (bt.get_role()) {
+            if(true) {
                 run_attack();
             } else {
                 run_defend();
