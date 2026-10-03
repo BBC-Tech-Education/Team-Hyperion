@@ -395,6 +395,7 @@ void loop() {
             // Reset compass heading
             bno.getEvent(&event);
             target = event.orientation.x;
+            ls.reset_line();
             state = STATE_GAME;
             break;
  

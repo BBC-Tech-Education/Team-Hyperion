@@ -14,6 +14,7 @@ public:
 
     float get_line_angle();
     float get_line_size();
+    void reset_line();
 
 private:
     void read();

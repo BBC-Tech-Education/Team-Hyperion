@@ -230,3 +230,8 @@ float LightSystem::get_line_angle() {
 float LightSystem::get_line_size() {
     return lineSize;
 }
+
+void LightSystem::reset_line() {
+    lineDir = 0.0f;
+    lineSize = 0.0f;
+}
