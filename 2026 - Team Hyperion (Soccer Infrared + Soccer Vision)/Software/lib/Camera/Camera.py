@@ -4,16 +4,25 @@ import time
 from pyb import UART
 
 widSize = 480
-robot = False # control true, chaos false
+robot = True # control true, chaos false
 draw = False
 
 if robot:
+<<<<<<< Updated upstream
     CENTER_X = widSize // 2 + 18
     CENTER_Y = widSize // 2 - 60
     MAX_RADIUS = 180
     MIN_RADIUS = 34
     INNER_CX = CENTER_X
     INNER_CY = CENTER_Y
+=======
+    CENTER_X = widSize // 2 + 16
+    CENTER_Y = widSize // 2 - 40
+    MAX_RADIUS = 175
+    MIN_RADIUS = 50
+    INNER_CX = CENTER_X - 6
+    INNER_CY = CENTER_Y - 2
+>>>>>>> Stashed changes
 else:
     CENTER_X = widSize // 2 - 3
     CENTER_Y = widSize // 2 - 40
@@ -31,7 +40,7 @@ sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.VGA)
 sensor.set_windowing((widSize, widSize))
 sensor.skip_frames(time=2000)
-sensor.set_auto_gain(False, gain_db=22.0)
+sensor.set_auto_gain(False, gain_db=18.0)
 sensor.set_auto_whitebal(False, rgb_gain_db=(0.0, 0.0, 0.0))
 sensor.set_auto_exposure(False, exposure_us=8000)
 
@@ -39,8 +48,13 @@ uart = UART(3, 115200, timeout_char=100)
 
 #blue, yellow
 if robot:
+<<<<<<< Updated upstream
     goal_thresholds = [(31, 37, -128, 8, -128, -14), (38, 52, -2, 24, 24, 127)]
     ball_threshold = [(53, 100, 42, 127, 37, 127)]
+=======
+    goal_thresholds = [(0, 100, -128, -3, -128, -11), (0, 100, -128, 4, 22, 127)]
+    ball_threshold = [(0, 100, 19, 127, 30, 127)]
+>>>>>>> Stashed changes
 else:
     goal_thresholds = [(32, 40, -128, 17, -128, -21), (37, 100, -128, 32, 16, 127)]
     ball_threshold = [(60, 100, 22, 127, 31, 127)]
