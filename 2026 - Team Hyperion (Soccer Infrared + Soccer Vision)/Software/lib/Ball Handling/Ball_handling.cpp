@@ -58,8 +58,8 @@ bool BallHandling::kicker_ready() {
 }
 
 bool BallHandling::can_kick() {
-    // return kicker_ready() && photogate_triggered();
-    return kicker_ready();
+    return kicker_ready() && photogate_triggered();
+    // return kicker_ready();
 }
  
 void BallHandling::kick() {

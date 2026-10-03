@@ -272,11 +272,13 @@ void run_attack() {
                 if(ballData.exists()) {
                     // If the ball data exists and the ball is infront, kick
                     if((ballData.arg < BALL_FRONT_MIN && ballData.arg > BALL_FRONT_MAX)) {
+                        Serial.println("kick1");
                         ballHandler.kick();
                     }
                 } else {
                     // If the ball data does not exist, kick
                     ballHandler.kick();
+                    Serial.println("kick2");
                 }
             }
         }
