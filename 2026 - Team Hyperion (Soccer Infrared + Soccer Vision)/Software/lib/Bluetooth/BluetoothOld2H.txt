@@ -26,18 +26,18 @@ private:
     void read();
     void send();
     void send_vector(Vect v);
-    void calculate_role();
+    void calculate_role(bool kickerReady);
+    bool defender_can_steal(Vect defenderBall);
     int16_t receive_vector_comp();
 
     CommunicationData self;
     CommunicationData other;
     
     Timer sendTimer{BT_SEND_TIMER_US};
-    Timer roleConflict{BT_ROLE_CONFLICT_TIMER};
+    Timer switchTimer{BT_SWITCH_TIMER_US};
     Timer connectedTimer{BT_CONNECTION_TIMEOUT_US};
 
     bool connected = false;
-    bool switching = false;
 };
 
 #endif
